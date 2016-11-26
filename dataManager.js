@@ -2,13 +2,16 @@
 var pg = require('pg');//postgre database
 
 //list of italian universities
-uni_list = ["bolzano","trento","udine","trieste","venezia","padova","verona","brescia","bergamo","varese","milano","pavia","castellanza","aosta","torino","vercelli","genova","parma","modena","ferrara","bologna","padova","venezia","udine","trieste","pisa","firenze","siena","s.marino","urbino","ancona","perugia","macerata","camerino","viterbo","l aquila","teramo","chieti","roma","cassino","campobasso","foggia","benevento","napoli","sassari","benevento","foggia","salerno","potenza","bari","lecce","rende","catanzaro","reggio calabria","messina","palermo","catania","cagliari"];
+var uni_list = ["bolzano","trento","trieste","venezia","verona","brescia","bergamo","varese","milano","pavia","castellanza","aosta","torino","vercelli","genova","parma","modena","ferrara","bologna","padova","udine","pisa","firenze","siena","s.marino","urbino","ancona","perugia","macerata","camerino","viterbo","l aquila","teramo","chieti","roma","cassino","campobasso","foggia","napoli","sassari","benevento","salerno","potenza","bari","lecce","rende","catanzaro","reggio calabria","messina","palermo","catania","cagliari"];
 
 //list of faculties
-faculties = ["science","engineering","medicina","giurisprudenza","economia","sociologia","lettere"];
+var faculties = ["science","engineering","medicina","giurisprudenza","economia","sociologia","lettere"];
 
+var databaseURL = "postgres://postgres:password@localhost:5432/todo";/*process.env.DATABASE_URL*/
 /**
  * @brief Randomly generates a tuple of data for a university or a faculty (without the key).
+ For each column data is generated around an average with common sense, those magic numbers can be changed without
+ any problem.
  * @return an array of data representing a university or faculty in the following way:
  [#professors/#students float,job after degree in 3 months float, classes in english boolean, average professor age integer,
  average citations per prof integer, total citations integer, annual funding integer, number of laboratories integer,
@@ -16,15 +19,12 @@ faculties = ["science","engineering","medicina","giurisprudenza","economia","soc
  */
 function generateTuple()
 {
-	return
-	[Math.random()*100,Math.random()*100,Math.random()>=0.5,Math.round(Math.random()*40),
-	 Math.round(Math.random()*500),Math.round(Math.random()*50000),Math.round(Math.random()*50000000),Math.round(Math.random()*50),
-	 Math.round(Math.random()*50000),Math.random()*200,Math.round(Math.random()*800),Math.random()];
+	return [Math.random()*100,Math.random()*100,Math.random()>=0.5,Math.round(Math.random()*40), Math.round(Math.random()*500),Math.round(Math.random()*50000),Math.round(Math.random()*50000000),Math.round(Math.random()*50), Math.round(Math.random()*50000),Math.random()*200,Math.round(Math.random()*800),Math.random()];
 }
 
 /**
  * @brief Given a university name and a list of faculties generate a string to insert them into the db, numerical values are 
- randomly generated.
+ randomly generated. The string is not parametrized since there is no input frome external sources.
  * @param in String name Name of the university to insert.
  * @param in String[] faculties Faculties of the university.
  * @return A string representing the queries needed to insert a university and its faculties.
@@ -37,40 +37,123 @@ function generateUniversity(name,faculties)
 	var facQuery = "INSERT INTO faculties VALUES ";
 	for(var i=0;i<faculties.length;i++)
 		facQuery += "('" +name+ "','" + faculties[i] + "'," + generateTuple().toString() + "),";
-<<<<<<< HEAD
-=======
 	facQuery = facQuery.replace(/.$/,";");
 	//append facQuery to uniQuery and return
 	return uniQuery.concat(facQuery);
->>>>>>> ac63e76... setting up heroku db
 }
 
 /**
- * @brief Randomly generates universities and faculties data starting from their names and insert it into the app db.
+ * @brief Clears the tables and randomly generates universities and faculties data starting from their names and insert it into the app db.
  * @param in String[] unis Universities to insert.
  * @param in String[] faculties List of faculties for each uni.
- * @return Description of returned value.
+ * @return True if data insertion went well, false otherwise.
  */
 function generateDbData(unis,faculties)
 {
 	//generate the query to insert the data
+	var res = true;
 	var query ="";
 	for(var i=0;i<unis.length;i++)
 		query = query.concat(generateUniversity(unis[i],faculties));
-	//connect to db and bulk insert data
-	console.log(query);
-<<<<<<< HEAD
-	/*
-=======
->>>>>>> ac63e76... setting up heroku db
-	pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-    client.query(query, function(err, result) 
+	//connect to db
+	pg.connect(databaseURL, function(err, client, done)
 	{
-      done();
-      if (err)
-      	console.error(err);res=false;
-    })});
-	*/
+		// handle connection errors
+		if(err) 
+		{
+			done();
+			console.log(err);
+			res=false;
+		}
+		else
+		{
+
+			//delete previous data from db
+			client.query("delete from faculties;delete from uni;", function(err, result) 
+			{
+			  done();
+			  if (err)
+			  {
+				  console.log(err);
+				  res=false;
+			  }
+			});
+
+			//if no errors on delete insert data
+			if(res)
+			{
+				//generate the query to insert the data
+				var query ="";
+				for(var i=0;i<unis.length;i++)
+					query = query.concat(generateUniversity(unis[i],faculties));
+				//connect to db and bulk insert data
+				client.query(query, function(err, result) 
+				{
+				  done();
+				  if (err)
+				  {
+					  console.log(err);
+					  res=false;
+				  }
+				});
+			}
+		}
+	});
+	return res;
 }
 
-exports.generate = function(){generateDbData(uni_list,faculties)};
+/**
+ * @brief Given a university name query the db to get data for it and pass the object to a callback function.
+ The object passed to the callback has fields named after the db uni table fields and an extra field called "faculties",
+ this field maps to an array of objects, where each object represent a faculty of the university, with fields named after the db faculties table. {uniFields : data, faculties : arrayOfFaculties}
+ * @param in String uni Name of the university to retrieve data about.
+ * @param in function(object) Callback function that accepts an object argument.
+ */
+function getUniversityData(uni,callback)
+{
+	var uniRes = [];
+	var facResults = [];
+	//connect to db
+	pg.connect(databaseURL, function(err, client, done)
+	{
+		//check for errors on connection
+		if(err) 
+		{
+			done();
+			console.log(err);
+		}
+		else
+		{
+				//get single uni data
+			    uniQuery = client.query("SELECT * FROM uni WHERE NAME = $1;",[uni]);
+				uniQuery.on("row", function(row)
+				{
+					uniRes.push(row);
+				});
+			
+				//get data about faculties of the university
+				facQuery = client.query("SELECT * FROM faculties f WHERE f.uni_name = $1",[uni]);
+				//get results 1 row at a time and push it to facResults
+				facQuery.on("row", function(row)  
+				{
+					facResults.push(row);
+				});
+			
+			    //close connection after getting data and pass object to callback
+				facQuery.on('end', function() 
+				{
+					done();
+					//if data has been found assemble the object
+					if(uniRes.length > 0)
+					{
+						uniRes = uniRes[0];//because uniRes it's an array, but it will always have a single item
+						uniRes.faculties = facResults;//assign the array of faculties as a property to uniRes
+					}
+					callback(uniRes);//pass to callback
+				});
+		}
+	});
+}
+	
+exports.generate = function(){generateDbData(uni_list,faculties);};
+exports.getUni = getUniversityData;

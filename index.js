@@ -14,9 +14,26 @@ var app = express();
 app.all("/db",function(request,response)
 {	
 	data.generate();
-	reponse.end("k");
+	response.end("k");
 });
 
+app.all("/data",function(request,response)
+{	
+	//set response header
+    var headers = {};
+    headers["Access-Control-Allow-Origin"] = "*"; //for cross enviroment request
+    headers["Access-Control-Allow-Methods"] = "POST, GET, PUT, DELETE, OPTIONS";//methods allowed to responce
+    headers["Access-Control-Allow-Credentials"] = false;
+    headers["Access-Control-Max-Age"] = '86400'; // 24 hours
+    headers["Access-Control-Allow-Headers"] = "X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"; //type of headers
+    //answer
+    headers["Content-Type"] = "application/JSON";//format response
+    response.writeHead(200, headers);
+	data.getUni(request.query.uni, (data) => 
+				{
+					response.end(JSON.stringify(data));
+				});
+});
 
 
 //setting port
