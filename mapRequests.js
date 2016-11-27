@@ -5,10 +5,11 @@ to the app passed as an argument, intended use is mapRequests(app).
 */
 
 var express = require('express');//express library
+var path = require('path');//for moving in folders
 var data = require('./dataManager.js');//Employee class and employees
 
 //path to main page file
-var filePath = __dirname+'/content/home.html';
+var filePath = __dirname+'/public/index.html';
 //path to error file
 var errorFilePath = __dirname+'/content/error.html';
 
@@ -19,19 +20,13 @@ var errorFilePath = __dirname+'/content/error.html';
  */
 function mapRequests(app)
 {
-	//index page
-	app.use('/', express.static(filePath));
-	app.use('/home',express.static(filePath));
-	app.use('/index',express.static(filePath));
-	//client side script
-	app.use('/script', express.static(__dirname+'/scripts')); 
-	//client side style
-	app.use('/style', express.static(__dirname+'/styles'));
-	
 	//to reset db
 	app.use('/db',resetDb);
 	//to retrieve uni data
 	app.use('/data',retrieveUniData);
+	
+	//allow access to public folder
+	app.use(express.static(path.join(__dirname, 'public')));
 	
 	//all requests different from above will be redirected to index 
 	app.use('*', express.static(filePath)); 
