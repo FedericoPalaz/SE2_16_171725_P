@@ -27,7 +27,8 @@ function generateTuple()
  randomly generated. The string is not parametrized since there is no input frome external sources.
  * @param in String name Name of the university to insert.
  * @param in String[] faculties Faculties of the university.
- * @return A string representing the queries needed to insert a university and its faculties.
+ * @return A string representing the queries needed to insert a university and its
+ faculties.
  */
 function generateUniversity(name,faculties)
 {
@@ -46,12 +47,12 @@ function generateUniversity(name,faculties)
  * @brief Clears the tables and randomly generates universities and faculties data starting from their names and insert it into the app db.
  * @param in String[] unis Universities to insert.
  * @param in String[] faculties List of faculties for each uni.
+ * @param in function(object) Callback function that accepts a boolean argument.
  * @return True if data insertion went well, false otherwise.
  */
-function generateDbData(unis,faculties)
+function generateDbData(unis,faculties,callback)
 {
 	//generate the query to insert the data
-	var res = true;
 	var query ="";
 	for(var i=0;i<unis.length;i++)
 		query = query.concat(generateUniversity(unis[i],faculties));
@@ -63,7 +64,7 @@ function generateDbData(unis,faculties)
 		{
 			done();
 			console.log(err);
-			res=false;
+			callback(false);
 		}
 		else
 		{
@@ -71,41 +72,41 @@ function generateDbData(unis,faculties)
 			//delete previous data from db
 			client.query("delete from faculties;delete from uni;", function(err, result) 
 			{
-			  done();
-			  if (err)
-			  {
-				  console.log(err);
-				  res=false;
-			  }
-			});
-
-			//if no errors on delete insert data
-			if(res)
-			{
-				//generate the query to insert the data
-				var query ="";
-				for(var i=0;i<unis.length;i++)
-					query = query.concat(generateUniversity(unis[i],faculties));
-				//connect to db and bulk insert data
-				client.query(query, function(err, result) 
+				done();
+				if (err)
 				{
-				  done();
-				  if (err)
-				  {
-					  console.log(err);
-					  res=false;
-				  }
-				});
-			}
+					console.log(err);
+					callback(false);
+				}
+				else
+				{
+					//generate the query to insert the data
+					var query ="";
+					for(var i=0;i<unis.length;i++)
+						query = query.concat(generateUniversity(unis[i],faculties));
+					//connect to db and bulk insert data
+					client.query(query, function(err, result) 
+					{
+						done();
+						if (err)
+						{
+							console.log(err);
+							callback(false);
+						}
+						else
+							callback(true);
+					});
+				}
+			});
 		}
 	});
-	return res;
 }
+			  
 
 /**
  * @brief Given a university name query the db to get data for it and pass the object to a callback function.
- The object passed to the callback has fields named after the db uni table fields and an extra field called "faculties",
- this field maps to an array of objects, where each object represent a faculty of the university, with fields named after the db faculties table. {uniFields : data, faculties : arrayOfFaculties}
+ The object passed to the callback has fields named after the db uni table fields and an extra field called "faculties", this field maps to an array of objects, where each object represent a faculty of the university, with fields named after the db faculties table. {uniFields : data, faculties : arrayOfFaculties}.
+ In case of error an object {'error':'error'} gets passed to the callback function.
  * @param in String uni Name of the university to retrieve data about.
  * @param in function(object) Callback function that accepts an object argument.
  */
@@ -125,14 +126,24 @@ function getUniversityData(uni,callback)
 		else
 		{
 				//get single uni data
-			    uniQuery = client.query("SELECT * FROM uni WHERE NAME = $1;",[uni]);
+			    uniQuery = client.query("SELECT * FROM uni WHERE NAME = $1;",[uni],
+									   function(error)
+										{
+											if(error)
+												callback({'error':'error'});
+										});
+											
 				uniQuery.on("row", function(row)
 				{
 					uniRes.push(row);
 				});
 			
 				//get data about faculties of the university
-				facQuery = client.query("SELECT * FROM faculties f WHERE f.uni_name = $1",[uni]);
+				facQuery = client.query("SELECT * FROM faculties f WHERE f.uni_name = $1",[uni], 			function(error)
+										{
+											if(error)
+												callback({'error':'error'});
+										});
 				//get results 1 row at a time and push it to facResults
 				facQuery.on("row", function(row)  
 				{
@@ -155,5 +166,5 @@ function getUniversityData(uni,callback)
 	});
 }
 	
-exports.generate = function(){generateDbData(uni_list,faculties);};
+exports.generate = function(callback){generateDbData(uni_list,faculties,callback);};
 exports.getUni = getUniversityData;
