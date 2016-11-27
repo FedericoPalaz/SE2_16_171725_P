@@ -73,14 +73,13 @@ var uniPoints = [
 //will store points with fields dependant on the current window size, it's a processed version of uniPoints
 var points = [];
 
-//holds that of already retrieved universities, it's initially empty, every time the server gets queried for infos about a university the info is stored here in order to not strain the server
+//initially empty, every time the server gets queried for infos about a university the info is stored here in order to not strain the server if the info about that university is requested again
 var uniData = {};
 
 var c;//canvas
 var ctx;//context of the canvas
 var img;//img to draw in the canvas
 var selected;//currently selected uni
-var backup;//original canvas, no uni selected 
 //canvas dimensions used at first draw, will be later used to determine where to draw points on resize
 
 
@@ -92,6 +91,27 @@ var refRadius = 5;
 
 //control
 /////////
+
+/**
+ * @brief Does an http get request to the specified url, the response text is passed to
+ the callback function.
+ * @param in string url Url for get request.
+ * @param in function callback Callback function that receives the response text.
+ * @return Description of returned value.
+ */
+function httpGetAsync(url,callback)	
+{
+	var xhr = new XMLHttpRequest();
+	var response = {};
+	xhr.onreadystatechange = function() 
+	{
+		//when response arrives pass it to callback
+		if (xhr.readyState == XMLHttpRequest.DONE)
+			callback(xhr.responseText);
+	}
+	xhr.open('GET', url, true);
+	xhr.send(null);
+}
 
 /**
  * @brief Calculate new canvas dimension and new clickable areas (Points) positions based on current window size.
@@ -123,7 +143,6 @@ function processPoints()
 window.onload = function() {
 	//hide the img since it's used in the canvas
 	img = document.getElementById("map");
-	img.style.display = "none";
 	//get canvas and its context
     c=document.getElementById("canvas");
     ctx=c.getContext("2d");
@@ -133,28 +152,38 @@ window.onload = function() {
 	c.addEventListener("click",checkClick);
 	//refresh every time the window is resized
 	window.onresize = refresh;
-	//set backup to have a canvas version with no unis selected
-	backup = ctx.getImageData(0,0,map.width,map.height);
-	//set original dimension to have a reference for later
-	originalX = c.width;
-	originalY = c.height;
-	console.log(originalX,originalY);
 };
 
 /**
  * @brief Checks against the array of Points if the click on the canvas is in the area of any of these points, to determine if the user is selecting a university.
+ If a university has been selected query the server for data about that university only if the data isn't stored locally already.
  * @param in event e Click event passed (passed by the clicked canvas).
  */
 function checkClick(e) {
     var clickedX = e.pageX - this.offsetLeft;
     var clickedY = e.pageY - this.offsetTop;
-    for (var i = 0; i < points.length; i++) {
-        if (clickedX < points[i].right && clickedX > points[i].left && clickedY > points[i].top && clickedY < points[i].bottom)
+    for (var i = 0; i < points.length; i++) 
+	{//check if the clicked coordinates area inside any Point area, by checking the
+	 //boundaries of each area
+        if (clickedX < points[i].right && clickedX > points[i].left
+			&& clickedY > points[i].top && clickedY < points[i].bottom)
 		{
-            document.getElementById("x").innerHTML = points[i].name;
+			//if a university has been selected query the server only if the information hasn't already been stored locally
+			if(typeof uniData[points[i].name] == 'undefined')
+			{
+				httpGetAsync('http://127.0.0.1:1337/data?uni='+points[i].name,						function(data)
+							 	{
+									var uni = JSON.parse(data);
+									//store info locally
+									uniData[uni.name] = uni;
+								});
+			}
+			selected = points[i].name;
+			displayUniInfo(selected);
         }
     }
 };
+
 
 
 //view
@@ -173,4 +202,30 @@ function drawPoints()
 		ctx.fill();
 	}
 	ctx.stroke();
+}
+
+function displayUniInfo(selected)
+{
+	;
+}
+//testing tab creation
+function openCity(evt, cityName) {
+    // Declare all variables
+    var i, tabcontent, tablinks;
+
+    // Get all elements with class="tabcontent" and hide them
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+
+    // Get all elements with class="tablinks" and remove the class "active"
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+
+    // Show the current tab, and add an "active" class to the link that opened the tab
+    document.getElementById(cityName).style.display = "block";
+    evt.currentTarget.className += " active";
 }

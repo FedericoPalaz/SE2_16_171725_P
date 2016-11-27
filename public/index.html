@@ -3,15 +3,40 @@
 		<head>
 			<title>UniItalia Info</title>
 			<meta charset="UTF-8">
-			<link rel="stylesheet" type="text/css" src="/styles/home.css" /> 
+			<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+			<link rel="stylesheet" href="/styles/home.css"> 
 		</head>
-		<body>
-			<img id="map" src="/img/map.jpg" alt="map of italy">
+		<body id="ayy">
+			<img id="map" src="/img/map.png" alt="map of italy">
 			<h1>Select a university to get information about it.</h1>
-			<p id="x">0</p><p id="y">0</p>
-			<div>
-				<canvas id="canvas" width="800" height="600">
-				</canvas>
+			<div class="container">
+				<div class="row">
+					<div class="col-md-6">
+						<canvas id="canvas" width="800" height="600">
+						</canvas>
+					</div>
+					<div class="col-md-6">
+						<ul class="tab">
+						  <li><a href="javascript:void(0)" class="tablinks" onclick="openCity(event, 'London')">London</a></li>
+						  <li><a href="javascript:void(0)" class="tablinks" onclick="openCity(event, 'Paris')">Paris</a></li>
+						  <li><a href="javascript:void(0)" class="tablinks" onclick="openCity(event, 'Tokyo')">Tokyo</a></li>
+						</ul>
+						<div id="London" class="tabcontent">
+						  <h3>London</h3>
+						  <p>London is the capital city of England.</p>
+						</div>
+
+						<div id="Paris" class="tabcontent">
+						  <h3>Paris</h3>
+						  <p>Paris is the capital of France.</p>
+						</div>
+
+						<div id="Tokyo" class="tabcontent">
+						  <h3>Tokyo</h3>
+						  <p>Tokyo is the capital of Japan.</p>
+						</div>
+					</div>
+				</div>
 			</div>
 
 
