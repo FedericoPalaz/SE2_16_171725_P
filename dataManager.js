@@ -2,7 +2,7 @@
 var pg = require('pg');//postgre database
 
 //list of italian universities
-var uni_list = ["bolzano","trento","trieste","venezia","verona","brescia","bergamo","varese","milano","pavia","castellanza","aosta","torino","vercelli","genova","parma","modena","ferrara","bologna","padova","udine","pisa","firenze","siena","s.marino","urbino","ancona","perugia","macerata","camerino","viterbo","l aquila","teramo","chieti","roma","cassino","campobasso","foggia","napoli","sassari","benevento","salerno","potenza","bari","lecce","rende","catanzaro","reggio calabria","messina","palermo","catania","cagliari"];
+var uni_list = ["bolzano","trento","trieste","venezia","verona","brescia","bergamo","varese","milano","pavia","castellanza","aosta","torino","vercelli","genova","parma","modena","ferrara","bologna","padova","udine","pisa","firenze","siena","urbino","ancona","perugia","macerata","camerino","viterbo","l aquila","teramo","chieti","roma","cassino","campobasso","foggia","napoli","sassari","benevento","salerno","potenza","bari","lecce","rende","catanzaro","reggio calabria","messina","palermo","catania","cagliari"];
 
 //list of faculties
 var faculties = ["science","engineering","medicina","giurisprudenza","economia","sociologia","lettere"];
@@ -19,7 +19,11 @@ var databaseURL = "postgres://postgres:password@localhost:5432/todo";/*process.e
  */
 function generateTuple()
 {
-	return [Math.random()*100,Math.random()*100,Math.random()>=0.5,Math.round(Math.random()*40), Math.round(Math.random()*500),Math.round(Math.random()*50000),Math.round(Math.random()*50000000),Math.round(Math.random()*50), Math.round(Math.random()*50000),Math.random()*200,Math.round(Math.random()*800),Math.random()];
+	var tuple = [Math.random()*100,Math.random()*100,Math.random()>=0.5,Math.round(Math.random()*40), Math.round(Math.random()*500),Math.round(Math.random()*50000),Math.round(Math.random()*50000000),Math.round(Math.random()*50), Math.round(Math.random()*50000),Math.random()*200,Math.round(Math.random()*800),Math.random()];
+	for(var i=0; i < tuple.length;i++)
+		if(typeof tuple[i] == 'number')
+			tuple[i] = tuple[i].toFixed(2);
+	return tuple;
 }
 
 /**

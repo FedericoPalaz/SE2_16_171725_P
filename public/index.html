@@ -3,39 +3,53 @@
 		<head>
 			<title>UniItalia Info</title>
 			<meta charset="UTF-8">
-			<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+			<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 			<link rel="stylesheet" href="/styles/home.css"> 
 		</head>
-		<body id="ayy">
+		<body>
 			<img id="map" src="/img/map.png" alt="map of italy">
-			<h1>Select a university to get information about it.</h1>
-			<div class="container">
+			<h1 id="display"s></h1>
+			<div class="container-fluid">
 				<div class="row">
-					<div class="col-md-6">
-						<canvas id="canvas" width="800" height="600">
+					<div class="col-md-5">
+						<canvas id="canvas">
 						</canvas>
 					</div>
-					<div class="col-md-6">
-						<ul class="tab">
-						  <li><a href="javascript:void(0)" class="tablinks" onclick="openCity(event, 'London')">London</a></li>
-						  <li><a href="javascript:void(0)" class="tablinks" onclick="openCity(event, 'Paris')">Paris</a></li>
-						  <li><a href="javascript:void(0)" class="tablinks" onclick="openCity(event, 'Tokyo')">Tokyo</a></li>
+					<div id="tabs" class="col-md-4">
+						
+						<ul id="tabHead" class="nav nav-pills" >
+							<li class="active"><a data-toggle="pill" href="#home">Home</a></li>
+							<li><a data-toggle="pill" href="#menu1">Menu 1</a></li>
+							<li><a data-toggle="pill" href="#menu2">Menu 2</a></li>
+							<li><a data-toggle="pill" href="#menu3">Menu 3</a></li>
 						</ul>
-						<div id="London" class="tabcontent">
-						  <h3>London</h3>
-						  <p>London is the capital city of England.</p>
-						</div>
 
-						<div id="Paris" class="tabcontent">
-						  <h3>Paris</h3>
-						  <p>Paris is the capital of France.</p>
-						</div>
-
-						<div id="Tokyo" class="tabcontent">
-						  <h3>Tokyo</h3>
-						  <p>Tokyo is the capital of Japan.</p>
+						<div id="tabContent" class="tab-content">
+							<div id="home" class="tab-pane fade in active">
+							  <h3>HOME</h3>
+							  <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+							</div>
+							<div id="menu1" class="tab-pane fade">
+							  <h3>Menu 1</h3>
+							  <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+							</div>
+							<div id="menu2" class="tab-pane fade">
+							  <h3>Menu 2</h3>
+							  <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam.</p>
+							</div>
+							<div id="menu3" class="tab-pane fade">
+							  <h3>Menu 3</h3>
+							  <p>Eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
+							</div>
 						</div>
 					</div>
+					
+					
+					
+					
+					
+					
+					
 				</div>
 			</div>
 
@@ -44,5 +58,7 @@
 
 
 			<script src="/scripts/home.js"></script>
+			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+			<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 		</body>
 	</html>
