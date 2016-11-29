@@ -7,7 +7,12 @@ var uni_list = ["bolzano","trento","trieste","venezia","verona","brescia","berga
 //list of faculties
 var faculties = ["science","engineering","medicina","giurisprudenza","economia","sociologia","lettere"];
 
-var databaseURL = "postgres://postgres:password@localhost:5432/todo";/*process.env.DATABASE_URL*/
+/*
+if app is run locally you need to have a .env file with a postgres url, like
+DATABASE_URL=postgres://postgres:password@localhost:5432/todo
+*/
+var databaseURL = process.env.DATABASE_URL;
+
 /**
  * @brief Randomly generates a tuple of data for a university or a faculty (without the key).
  For each column data is generated around an average with common sense, those magic numbers can be changed without

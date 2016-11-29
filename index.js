@@ -18,7 +18,7 @@ var app = express();
 //authorizations
 app.options('*', cors());
 //setting port
-app.set('port', (process.env.PORT || 1337));
+app.set('port', (process.env.PORT || 5000));
 
 //setting parsers for urls and json
 app.use(bodyParser.urlencoded({ extended: false }));

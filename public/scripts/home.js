@@ -15,56 +15,56 @@ var Point = function(name,x,y,radius)
 
 //point coordinates [x,y,name of university], x and y aren't absolute but a % of the width and height of the map
 var uniPoints = [
-	[0.38,0.05,'bolzano'],
-	[0.37,0.09,'trento'],
+	[0.38808373590982287,0.05135520684736091,'bolzano'],
+	[0.3752012882447665,0.0912981455064194,'trento'],
 	[0.30,0.14,'brescia'],
-	[0.23,0.12,'bergamo'],
-	[0.17,0.12,'varese'],
-	[0.18,0.13,'castellanza'],
+	[0.23832528180354268,0.11697574893009986,'bergamo'],
+	[0.178743961352657,0.12268188302425106,'varese'],
+	[0.18840579710144928,0.1326676176890157,'castellanza'],
 	[0.20,0.17,'milano'],
-	[0.19,0.19,'pavia'],
-	[0.14,0.18,'vercelli'],
+	[0.19806763285024154,0.19258202567760344,'pavia'],
+	[0.14492753623188406,0.1768901569186876,'vercelli'],
 	[0.08,0.19,'torino'],
 	[0.08,0.12,'aosta'],
 	[0.35,0.15,'verona'],
 	[0.41,0.19,'padova'],
 	[0.46,0.17,'venezia'],
-	[0.51,0.10,'udine'],
-	[0.55,0.14,'trieste'],
-	[0.28,0.23,'parma'],
-	[0.32,0.24,'modena'],
+	[0.5217391304347826,0.10128388017118402,'udine'],
+	[0.5523349436392915,0.14550641940085593,'trieste'],
+	[0.28019323671497587,0.23537803138373753,'parma'],
+	[0.32367149758454106,0.24679029957203993,'modena'],
 	[0.39,0.24,'ferrara'],
-	[0.35,0.26,'bologna'],
-	[0.17,0.25,'genova'],
-	[0.29,0.30,'pisa'],
-	[0.35,0.32,'firenze'],
-	[0.36,0.38,'siena'],
-	[0.46,0.34,'urbino'],
-	[0.52,0.35,'ancona'],
-	[0.54,0.37,'macerata'],
-	[0.51,0.39,'camerino'],
+	[0.357487922705314,0.2582025677603424,'bologna'],
+	[0.17391304347826086,0.25392296718972895,'genova'],
+	[0.2898550724637681,0.30813124108416545,'pisa'],
+	[0.35104669887278583,0.32667617689015693,'firenze'],
+	[0.36553945249597425,0.38088445078459343,'siena'],
+	[0.46859903381642515,0.34522111269614836,'urbino'],
+	[0.5281803542673108,0.3537803138373752,'ancona'],
+	[0.5394524959742351,0.3751783166904422,'macerata'],
+	[0.5040257648953301,0.39514978601997147,'camerino'],
 	[0.45,0.40,'perugia'],
-	[0.40,0.45,'viterbo'],
-	[0.44,0.52,'roma'],
+	[0.4025764895330113,0.4550641940085592,'viterbo'],
+	[0.44605475040257647,0.5235378031383737,'roma'],
 	[0.55,0.56,'cassino'],
-	[0.51,0.45,'l aquila'],
-	[0.56,0.46,'teramo'],
+	[0.5169082125603864,0.456490727532097,'l aquila'],
+	[0.5668276972624798,0.4607703281027104,'teramo'],
 	[0.59,0.48,'chieti'],
-	[0.60,0.53,'campobasso'],
-	[0.63,0.58,'benevento'],
-	[0.58,0.60,'napoli'],
-	[0.63,0.62,'salerno'],
+	[0.6038647342995169,0.5378031383737518,'campobasso'],
+	[0.6328502415458938,0.5848787446504993,'benevento'],
+	[0.5877616747181964,0.6062767475035663,'napoli'],
+	[0.6360708534621579,0.62339514978602,'salerno'],
 	[0.71,0.62,'potenza'],
-	[0.70,0.53,'foggia'],
-	[0.83,0.6,'bari'],
-	[0.91,0.64,'lecce'],
-	[0.75,0.73,'rende'],
+	[0.7085346215780999,0.536376604850214,'foggia'],
+	[0.8373590982286635,0.5962910128388017,'bari'],
+	[0.9210950080515298,0.6462196861626248,'lecce'],
+	[0.7552334943639292,0.7375178316690443,'rende'],
 	[0.80,0.8,'catanzaro'],
 	[0.72,0.88,'reggio calabria'],
 	[0.68,0.87,'messina'],
 	[0.51,0.87,'palermo'],
-	[0.65,0.94,'catania'],
-	[0.13,0.60,'sassari'],
+	[0.6586151368760065,0.9386590584878745,'catania'],
+	[0.13687600644122383,0.5991440798858774,'sassari'],
 	[0.17,0.75,'cagliari']];
 
 //From arrays are the names of the attributes of the objects received from the server
@@ -85,11 +85,15 @@ var points = [];
 var uniData = {};
 
 //radius of the clickable area around a uni as a % of the total map area
-var refRadius = 0.00004;
+var refRadius = 0.000010;
 var c;//canvas
 var ctx;//context of the canvas
+var backup;//backup image data to avoid calling the function refresh() on points deselection, it's a "clean" map, with no points selected
 var img;//img to draw in the canvas
-var selected = "";//currently selected uni
+//currently selected uni and its coordinates
+var selected = "";
+var sX = 0;
+var sY = 0;
 //canvas dimensions used at first draw, will be later used to determine where to draw points on resize
 
 //control
@@ -125,15 +129,10 @@ function refresh(event) {
 	var ref = Math.min(window.innerHeight,window.innerWidth);
 	c.width = ref;
 	c.height = c.width * 1.13;
-	/*
-    c.width = window.innerWidth * 0.3125;
-    c.height = window.innerHeight * 0.9375;
-	*/
 	ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+	//backup clean map with no selections
+	backup = ctx.getImageData(0,0,c.width,c.height);
 	processPoints();
-	//drawPoints();
-	console.log(c.width);
-	console.log(c.height);
 };
 
 
@@ -145,8 +144,17 @@ function processPoints()
 	//clickable area around a uni
 	var refArea = (c.width*c.height)*refRadius;
 	//calculate new area and position depending on window size
-	for(var i = 0;i <uniPoints.length;i++)
+	for(var i = 0; i < uniPoints.length; i++)
+	{
 		points.push(new Point(uniPoints[i][2],c.width*uniPoints[i][0],c.height*uniPoints[i][1],refArea));
+		//if the point refers to a selected university show the selection on the map
+		if(points[i].name === selected)
+		{
+			sX = points[i].x;
+			sY = points[i].y;
+			showSelection();
+		}
+	}
 }
 
 //stuff to do on window load
@@ -174,7 +182,8 @@ window.onload = function() {
 function checkClick(e) {
     var clickedX = e.pageX - getOffsetLeft(this);
     var clickedY = e.pageY - getOffsetTop(this);
-    for (var i = 0; i < points.length; i++) 
+	var found = false;
+    for (var i = 0; i < points.length && !found; i++) 
 	{
 		
 		//check if the clicked coordinates area inside any Point area, by checking the
@@ -182,23 +191,26 @@ function checkClick(e) {
         if (clickedX < points[i].right && clickedX > points[i].left
 			&& clickedY > points[i].top && clickedY < points[i].bottom)
 		{
+			found = true;
+			selected = points[i].name;
+			sX = points[i].x;
+			sY = points[i].y;
 			//if a university has been selected query the server only if the information hasn't already been stored locally
 			if(typeof uniData[points[i].name] == 'undefined')
 			{
-				httpGetAsync('http://127.0.0.1:1337/data?uni='+points[i].name,						function(data)
+				httpGetAsync('/data?uni='+points[i].name, function(data)
 							 	{
 									var uni = JSON.parse(data);
 									//store info locally
 									uniData[uni.name] = uni;
-									selected = uni.name;
 									displayUniInfo(selected);
 								});
 			}
 			else
 			{
-				selected = points[i].name;
 				displayUniInfo(selected);
 			}
+			//cant put displayUniInfo(selected) here due to the async nature of the http req
         }
     }
 };
@@ -267,6 +279,8 @@ function displayUniInfo(selected)
 	assembleTabContent(body,selected);
 	document.getElementById("tabs").style.display = "block";
 	updateDisplayTitle();
+	//draw a circle around the selected uni
+	showSelection();
 }
 
 /**
@@ -339,6 +353,15 @@ function assembleTabContent(body,selected)
  */
 function assembleSingleTab(element,dataObj)
 {
+	//name of the uni and circle with color associated with the selected university
+	var name = document.createElement("h2");
+	//needed because even if the dataObj is a faculty we want to show the uni_name and not the faculty name
+	if(typeof dataObj.uni_name === 'undefined')
+		name.innerHTML = dataObj.name;
+	else
+		name.innerHTML = dataObj.uni_name;
+	var circle = document.createElement("div");
+	circle.className += "circle";
 	//set up 3 text elements describing the tables
 	var did = document.createElement("h3");
 	did.innerHTML = "teaching";
@@ -348,6 +371,8 @@ function assembleSingleTab(element,dataObj)
 	local.innerHTML = "local life";
 	
 	//append text elements and tables created on the fly
+	element.appendChild(name);
+	element.appendChild(circle);
 	element.appendChild(did);
 	element.appendChild(makeTable(dataObj,teachingFrom,teachingTo));
 	element.appendChild(research);
@@ -393,9 +418,35 @@ function updateDisplayTitle()
 		display.innerHTML = "Currently selected: " + selected + ".";
 }
 
+/**
+ * @brief To make the tab with information about a university "close". The page title gets updated.
+ */
 function closeTab()
 {
+	//remove selection from the map
+	ctx.putImageData(backup, 0, 0);
 	selected = "";
+	sX = 0;
+	sY = 0;
 	document.getElementById("tabs").style.display = "none";
 	updateDisplayTitle();
 }
+
+/**
+ * @brief Shows the selected university on the map drawing a circle on it.
+ */
+function showSelection()
+{
+	//remove previous selections from map if they exist
+	if(selected  != '')
+		ctx.putImageData(backup, 0, 0);
+	ctx.putImageData(backup, 0, 0);
+	//area of the circle around a uni
+	var refArea = (c.width*c.height)*refRadius;
+	ctx.beginPath();
+	ctx.arc(sX,sY, refArea, 0, 2 * Math.PI);
+	ctx.fillStyle = "red";
+	ctx.fill();
+	ctx.stroke();
+}
+
