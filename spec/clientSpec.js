@@ -20,7 +20,6 @@ var base_url = "http://localhost:5000/";
 	client.__set__("backup",{});
 
 
-var uniPoints = client.__get__("uniPoints");
 
 
 var Point;
@@ -226,7 +225,7 @@ describe("Testing checkClick(event) function: ", function()
 	var checkClick = client.__get__("checkClick");
 	//mockup points[] to be used to check clickable areas
 	var points = [];
-	for(var i = 0; i < uniPoints.length; i++)
+	for(var i = 0; i < client.__get__("uniPoints").length; i++)
 		points.push(new Point(i,i,i,0.1));
 	//defining all uniData fields since httpGetAsync isn't meant to be tested here
 	var uniData = {};
