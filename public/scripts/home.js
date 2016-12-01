@@ -129,7 +129,7 @@ function refresh(event) {
 	var ref = Math.min(window.innerHeight,window.innerWidth);
 	c.width = ref;
 	c.height = c.width * 1.13;
-	ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+	ctx.drawImage(img, 0, 0, c.width, c.height);
 	//backup clean map with no selections
 	backup = ctx.getImageData(0,0,c.width,c.height);
 	processPoints();
