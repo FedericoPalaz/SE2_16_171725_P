@@ -129,7 +129,7 @@ function refresh(event) {
 	var ref = Math.min(window.innerHeight,window.innerWidth);
 	c.width = ref;
 	c.height = c.width * 1.13;
-	ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+	ctx.drawImage(img, 0, 0, c.width, c.height);
 	//backup clean map with no selections
 	backup = ctx.getImageData(0,0,c.width,c.height);
 	processPoints();
@@ -156,9 +156,8 @@ function processPoints()
 		}
 	}
 }
-
 //stuff to do on window load
-window.onload = function() {
+ function onLoad() {
 	//hide the img since it's used in the canvas
 	img = document.getElementById("map");
 	//get canvas and its context
@@ -173,7 +172,8 @@ window.onload = function() {
 	//display title (<h1> above map)
 	updateDisplayTitle();
 };
-
+if(typeof window != 'undefined')
+	window.onload = onLoad();
 /**
  * @brief Checks against the array of Points if the click on the canvas is in the area of any of these points, to determine if the user is selecting a university.
  If a university has been selected query the server for data about that university only if the data isn't stored locally already.
