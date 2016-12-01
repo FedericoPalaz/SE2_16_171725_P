@@ -185,7 +185,6 @@ function checkClick(e) {
 	var found = false;
     for (var i = 0; i < points.length && !found; i++) 
 	{
-		
 		//check if the clicked coordinates area inside any Point area, by checking the
 		//boundaries of each area
         if (clickedX < points[i].right && clickedX > points[i].left
