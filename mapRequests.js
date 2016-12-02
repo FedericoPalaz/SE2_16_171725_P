@@ -55,7 +55,6 @@ function resetDb(request,response)
  see getUniversityData descriptino in the dataManager.js module. If uni query parameter is missing 
  or its nonsense an empty object is returned.
  */
-
 function retrieveUniData(request,response)
 {
 	//set response header
@@ -85,6 +84,10 @@ function retrieveUniData(request,response)
 	}
 }
 
+ /*
+ Retrieves all univesities names, and returns them in a json format as an object in the form of:
+ {names:String[]}, or {error:'error'} if there has been an error.
+ */
 function retrieveUniNames(request,response)
 {
 	//set response header
@@ -106,6 +109,11 @@ function retrieveUniNames(request,response)
 				});
 }
 
+
+/*
+ Retrieves all faculties names, and returns them in a json format as an object in the form of:
+ {names:String[]}, or {error:'error'} if there has been an error.
+ */
 function retrieveFacultyNames(request,response)
 {
 	//set response header
