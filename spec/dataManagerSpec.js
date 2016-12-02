@@ -127,4 +127,18 @@ describe("Testing for getUniversityData(uni,callback) function: ", function()
 		});
 	});
 	
+	it("4 sql injection", function(done)
+	{
+		//if the uni argument isn't parametrized the query "MAKE AN ERROR" will follow, since that syntax surely isn't accept it will lead to a psql error
+		//if the uni argument is parametrized we can expect to have an empty result since no uni with that name exists
+		get("test;MAKE AN ERROR;",function(data)
+		{
+			done();
+			expect(data).toBeDefined;
+			expect(data).not.toBe(null);
+			expect(data).toEqual({});
+		});
+		
+	});
+	
 });
