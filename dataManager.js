@@ -144,7 +144,10 @@ function getUniversityData(uni,callback)
 									   function(error)
 										{
 											if(error)
+											{
+												console.log(err);
 												callback({'error':'error'});
+											}
 										});
 											
 				uniQuery.on("row", function(row)
@@ -156,7 +159,10 @@ function getUniversityData(uni,callback)
 				facQuery = client.query("SELECT * FROM faculties f WHERE f.uni_name = $1",[uni], 			function(error)
 										{
 											if(error)
+											{
+												console.log(err);
 												callback({'error':'error'});
+											}
 										});
 				//get results 1 row at a time and push it to facResults
 				facQuery.on("row", function(row)  
@@ -174,7 +180,8 @@ function getUniversityData(uni,callback)
 						uniRes = uniRes[0];//because uniRes it's an array, but it will always have a single item
 						uniRes.faculties = facResults;//assign the array of faculties as a property to uniRes
 					}
-					callback(uniRes);//pass to callback
+					else
+						callback({});//pass to callback
 				});
 		}
 	});
@@ -196,6 +203,7 @@ function getUniversityNames(callback)
 		{
 			done();
 			console.log(err);
+			callback({'error':'error'});
 		}
 		else
 		{

@@ -127,25 +127,4 @@ describe("Testing for getUniversityData(uni,callback) function: ", function()
 		});
 	});
 	
-	it("4 can find all universities", function(done)
-	{
-		var names = data.__get__("getUniversityNames");
-		
-		//first we get uni names with getUniversityNames, assuming it works because its test comes first
-		names(function(data)
-		{
-			//for each name query the db and check if university data is returned for each university name provided by getUniversitynames
-			for(var i = 0; i < data.names.length; i++)
-			{
-				get(data.names[i],function(uniData)
-				{
-					done();
-					expect(uniData).toBeDefined;
-					expect(uniData).not.toBe(null);
-					expect(typeof uniData).toEqual("object");
-					expect(typeof uniData.faculties).toEqual(typeof []);
-				});
-			}
-		});
-	});
 });
