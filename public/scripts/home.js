@@ -156,6 +156,7 @@ function processPoints()
 		}
 	}
 }
+
 //stuff to do on window load
  function onLoad() {
 	//hide the img since it's used in the canvas
@@ -172,8 +173,7 @@ function processPoints()
 	//display title (<h1> above map)
 	updateDisplayTitle();
 };
-if(typeof window != 'undefined')
-	window.onload = onLoad();
+
 /**
  * @brief Checks against the array of Points if the click on the canvas is in the area of any of these points, to determine if the user is selecting a university.
  If a university has been selected query the server for data about that university only if the data isn't stored locally already.
