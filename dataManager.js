@@ -179,6 +179,7 @@ function getUniversityData(uni,callback)
 					{
 						uniRes = uniRes[0];//because uniRes it's an array, but it will always have a single item
 						uniRes.faculties = facResults;//assign the array of faculties as a property to uniRes
+						callback(uniRes);
 					}
 					else
 						callback({});//pass to callback

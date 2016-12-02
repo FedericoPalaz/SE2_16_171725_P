@@ -22,6 +22,11 @@ function mapRequests(app)
 {
 	//to reset db
 	app.use('/db',resetDb);
+	
+	//to retriveve all uni names
+	app.use('/data/universities',retrieveUniNames);
+	//to retriveve all uni names
+	app.use('/data/faculties',retrieveFacultyNames);
 	//to retrieve uni data
 	app.use('/data',retrieveUniData);
 	
@@ -62,7 +67,36 @@ function retrieveUniData(request,response)
     headers["Access-Control-Allow-Headers"] = "X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"; //type of headers
     //answer
     headers["Content-Type"] = "application/JSON";//format response
-	data.getUni(request.query.uni, function(data)
+	if(typeof request.query.uni != 'undefined')
+	{
+		data.getUni(request.query.uni, function(data)
+				{
+					if(data.error === 'error')
+						response.writeHead(500, headers);
+					else
+						response.writeHead(200, headers);
+					response.end(JSON.stringify(data));
+				});
+	}
+	else
+	{
+		response.writeHead(406, headers);
+		response.end(JSON.stringify({}));
+	}
+}
+
+function retrieveUniNames(request,response)
+{
+	//set response header
+    var headers = {};
+    headers["Access-Control-Allow-Origin"] = "*"; //for cross enviroment request
+    headers["Access-Control-Allow-Methods"] = "POST, GET, PUT, DELETE, OPTIONS";//methods allowed to responce
+    headers["Access-Control-Allow-Credentials"] = false;
+    headers["Access-Control-Max-Age"] = '86400'; // 24 hours
+    headers["Access-Control-Allow-Headers"] = "X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"; //type of headers
+    //answer
+    headers["Content-Type"] = "application/JSON";//format response
+	data.getUniNames(function(data)
 				{
 					if(data.error === 'error')
 						response.writeHead(500, headers);
@@ -71,7 +105,27 @@ function retrieveUniData(request,response)
 					response.end(JSON.stringify(data));
 				});
 }
-	
+
+function retrieveFacultyNames(request,response)
+{
+	//set response header
+    var headers = {};
+    headers["Access-Control-Allow-Origin"] = "*"; //for cross enviroment request
+    headers["Access-Control-Allow-Methods"] = "POST, GET, PUT, DELETE, OPTIONS";//methods allowed to responce
+    headers["Access-Control-Allow-Credentials"] = false;
+    headers["Access-Control-Max-Age"] = '86400'; // 24 hours
+    headers["Access-Control-Allow-Headers"] = "X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"; //type of headers
+    //answer
+    headers["Content-Type"] = "application/JSON";//format response
+	data.getFacNames(function(data)
+				{
+					if(data.error === 'error')
+						response.writeHead(500, headers);
+					else
+						response.writeHead(200, headers);
+					response.end(JSON.stringify(data));
+				});
+}
 	
 
 exports.map = mapRequests;
