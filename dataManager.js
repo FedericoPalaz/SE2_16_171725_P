@@ -12,6 +12,7 @@ if app is run locally you need to have a .env file with a postgres url, like
 DATABASE_URL=postgres://postgres:password@localhost:5432/todo
 */
 var databaseURL = process.env.DATABASE_URL;
+databaseURL = databaseURL + "?ssl=true";
 
 /**
  * @brief Randomly generates a tuple of data for a university or a faculty (without the key).
