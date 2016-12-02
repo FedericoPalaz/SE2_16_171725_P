@@ -84,6 +84,7 @@ function generateDbData(unis,faculties,callback)
 				done();
 				if (err)
 				{
+					done();
 					console.log(err);
 					callback(false);
 				}
@@ -99,11 +100,15 @@ function generateDbData(unis,faculties,callback)
 						done();
 						if (err)
 						{
+							done();
 							console.log(err);
 							callback(false);
 						}
 						else
+						{
+							done();
 							callback(true);
+						}
 					});
 				}
 			});
@@ -175,5 +180,104 @@ function getUniversityData(uni,callback)
 	});
 }
 	
+
+/**
+ * @brief Finds all university names and returns them in an object in the form {names:String[]}, ordered lexically.
+ In case of error an object {'error':'error'} gets passed to the callback function.
+ * @param in function(object) Callback function that accepts an object argument.
+ */
+function getUniversityNames(callback)
+{
+	//connect to db
+	pg.connect(databaseURL, function(err, client, done)
+	{
+		//check for errors on connection
+		if(err) 
+		{
+			done();
+			console.log(err);
+		}
+		else
+		{
+				var results = [];
+				//get data about faculties of the university
+				var query = client.query("SELECT DISTINCT(name) FROM uni ORDER BY NAME", function(error)
+				{
+					if(error)
+					{
+						done();
+						callback({'error':'error'});
+					}
+				});
+				//get results 1 row at a time and push it to results
+				query.on("row", function(row)  
+				{
+					results.push(row);
+				});
+			
+			    //close connection after getting data and pass object to callback
+				query.on('end', function() 
+				{
+					//doing {names:results} would result in names being an array of objects {name:<uniName>}, trasforming it in an array of names
+					var res = []
+					for(var i = 0;i < results.length; i++)
+						res.push(results[i].name);
+					done();
+					callback({names:res});//pass to callback
+				});
+		}
+	});
+}
+
+/**
+ * @brief Finds all faculty names and returns them in an object in the form {names:String[]}, ordered lexically.
+ In case of error an object {'error':'error'} gets passed to the callback function.
+ * @param in function(object) Callback function that accepts an object argument.
+ */
+function getFacultyNames(callback)
+{
+	//connect to db
+	pg.connect(databaseURL, function(err, client, done)
+	{
+		//check for errors on connection
+		if(err) 
+		{
+			done();
+			console.log(err);
+		}
+		else
+		{
+				var results = [];
+				//get data about faculties of the university
+				var query = client.query("SELECT DISTINCT(name) FROM faculties ORDER BY NAME", function(error)
+				{
+					if(error)
+					{
+						done();
+						callback({'error':'error'});
+					}
+				});
+				//get results 1 row at a time and push it to results
+				query.on("row", function(row)  
+				{
+					results.push(row);
+				});
+			
+			    //close connection after getting data and pass object to callback
+				query.on('end', function() 
+				{
+					//doing {names:results} would result in names being an array of objects {name:<facultyName>}, trasforming it in an array of names
+					var res = []
+					for(var i = 0;i < results.length; i++)
+						res.push(results[i].name);
+					done();
+					callback({names:res});//pass to callback
+				});
+		}
+	});
+}
+
 exports.generate = function(callback){generateDbData(uni_list,faculties,callback);};
 exports.getUni = getUniversityData;
+exports.getUniNames = getUniversityNames;
+exports.getFacNames = getFacultyNames;
