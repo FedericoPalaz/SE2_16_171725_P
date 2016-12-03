@@ -38,9 +38,29 @@ a
     -webkit-border-radius: 25px;
     -moz-border-radius: 25px;
     border-radius: 25px;
-    background: red;
 	display: inline-block;
 	margin-left: 10px;
+}
+
+.blue
+{
+	background: blue;
+}
+
+.red
+{
+	background: red;
+}
+
+.gray
+{
+	background: gray;
+}
+/* to make the divs for universities comparison stand next to each other*/
+
+.first 
+{
+	float: left;
 }
 
 /*styles for the nav nav-pills (the tabs)*/

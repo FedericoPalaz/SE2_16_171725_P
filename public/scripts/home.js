@@ -76,7 +76,7 @@ var researchFrom = ["cit_prof","total_cit","annual_funding","laboratories"];
 var researchTo = ["average citations per teacher","total citations","annual funding(€)","laboratories"];
 	
 var localFrom = ["avg_income","internet_speeed","pop_density","english_knownledge"];
-var localTo = ["average income(€,yearly)","average internet speed(Mb/s)", "population density(per square km)","% of fluent english speakers"];
+var localTo = ["average income(€,yearly)","average internet speed(Mb/s)", "population density(people/km2)","% of fluent english speakers"];
 
 //will store points with fields dependant on the current window size, it's a processed version of uniPoints
 var points = [];
@@ -90,11 +90,17 @@ var c;//canvas
 var ctx;//context of the canvas
 var backup;//backup image data to avoid calling the function refresh() on points deselection, it's a "clean" map, with no points selected
 var img;//img to draw in the canvas
+
+
 //currently selected uni and its coordinates
 var selected = "";
 var sX = 0;
 var sY = 0;
-//canvas dimensions used at first draw, will be later used to determine where to draw points on resize
+//second selection and its coordinates
+var selected2 = "";
+var sX2 = 0;
+var sY2 = 0;
+
 
 //control
 /////////
@@ -152,9 +158,15 @@ function processPoints()
 		{
 			sX = points[i].x;
 			sY = points[i].y;
-			showSelection();
+		}
+		else if(points[i].name === selected2)
+		{
+			sX2 = points[i].x;
+			sY2 = points[i].y;
 		}
 	}
+	//show selected universities if they exist
+	showSelection();
 }
 
 //stuff to do on window load
@@ -185,16 +197,26 @@ function checkClick(e) {
 	var found = false;
     for (var i = 0; i < points.length && !found; i++) 
 	{
-		
 		//check if the clicked coordinates area inside any Point area, by checking the
 		//boundaries of each area
         if (clickedX < points[i].right && clickedX > points[i].left
 			&& clickedY > points[i].top && clickedY < points[i].bottom)
 		{
 			found = true;
-			selected = points[i].name;
-			sX = points[i].x;
-			sY = points[i].y;
+			//if no unis are currently selected
+			if(selected === "")
+			{
+				selected = points[i].name;
+				sX = points[i].x;
+				sY = points[i].y;
+			}
+			else if(selected != points[i].name)
+			{
+				//if there is already a uni selected add this selection as a second selection
+				selected2 = points[i].name;
+				sX2 = points[i].x;
+				sY2 = points[i].y;
+			}
 			//if a university has been selected query the server only if the information hasn't already been stored locally
 			if(typeof uniData[points[i].name] == 'undefined')
 			{
@@ -207,9 +229,7 @@ function checkClick(e) {
 								});
 			}
 			else
-			{
-				displayUniInfo(selected);
-			}
+				displayUniInfo();
 			//cant put displayUniInfo(selected) here due to the async nature of the http req
         }
     }
@@ -249,6 +269,47 @@ function getOffsetTop( elem )
     return offsetTop;
 }
 
+
+/**
+ * @brief Clears the selection of a university, depending on the id passed.
+ Id 1 -> clear first selection.
+ Id 2 -> clear second selection.
+ * @param in int id Id to identify wich selection to remove.
+ */
+function removeSelection(id)
+{
+	if(id==1)
+	{
+		if(selected2 !== "")
+		{
+			selected = selected2;
+			sX = sX2;
+			sY = sY2;
+			selected2 = "";
+			sX2 = 0;
+			sY2 = 0;
+		}
+		else
+		{
+			selected = "";
+			sX = 0;
+			sY = 0;
+		}
+	}
+	else if(id==2)
+	{
+		selected2 = "";
+		sX2 = 0;
+		sY2 = 0;
+	}
+	refresh({});
+	if(selected != "")
+		displayUniInfo();
+	else
+		closeTab();
+}
+
+
 //view
 //////
 
@@ -269,14 +330,13 @@ function drawPoints()
 
 /**
  * @brief Show the informations about the selected university in a panel with #faculties+1 tabs.
- * @param in String selected University to display informations.
  */
-function displayUniInfo(selected)
+function displayUniInfo()
 {
 	var head = document.getElementById("tabHead");
 	var body = document.getElementById("tabContent");
-	assembleTabHead(head,selected);
-	assembleTabContent(body,selected);
+	assembleTabHead(head);
+	assembleTabContent(body);
 	document.getElementById("tabs").style.display = "block";
 	updateDisplayTitle();
 	//draw a circle around the selected uni
@@ -287,16 +347,15 @@ function displayUniInfo(selected)
  * @brief Assembles the tab header with #faculties + 1 menus.
  The first menu is for the average of the university, the other ones are one for each faculty.
  * @param in div head A nav(div html element withc lass nav nav-pills) to fill with content.
- * @param in String selected The university to use to get data.
  */
-function assembleTabHead(head,selected)
+function assembleTabHead(head)
 {
 	//remove all previous children
 	while(head.firstChild)
 		head.removeChild(head.firstChild);
 	//create a first, selected element and add it to the head
 	var firstEl = document.createElement("li");
-	firstEl.innerHTML = '<a data-toggle="pill" href="#home">' + uniData[selected].name +'</a>';
+	firstEl.innerHTML = '<a data-toggle="pill" href="#home">average between faculties</a>';
 	//set class so that its selected by default
 	firstEl.className = "active";
 	head.appendChild(firstEl);
@@ -308,20 +367,36 @@ function assembleTabHead(head,selected)
 			uniData[selected].faculties[i].name +'</a>';
 		head.appendChild(tmp);
 	}
+	
 	//add an exit button to the tab
+	head.appendChild(makeExitButton("red",1));
+	//if 2 universities are selected add a second exit button
+	if(selected2 != "")
+		head.appendChild(makeExitButton("blue",2));
+}
+
+/**
+ * @brief Given a color and an id make an exit button wich if clicked will lead to the deselection of the first/second selected university. If a university remains selected (i.e. you have 2 selected universities and you click the exit button related to the first one) the tab won't close but will show infos about the remaining selected university.
+ * @param in String color A string representing the color of the button, in css format.
+ * @param in int id Id to select wich of the selected universities this button is related to (1 for selected, 2 for selected2).
+ * @return Description of returned value.
+ */
+function makeExitButton(color,id)
+{
 	var exit = document.createElement("li");
 	exit.innerHTML = '<a data-toggle="pill"> X </a>';
-	exit.style.backgroundColor = "#595959";
-	head.appendChild(exit);
-	exit.addEventListener("click",closeTab);
+	exit.style.backgroundColor = color;
+	//passing function(){~~~~} instead of passing the function directly and having it to check id with this.id makes removeSelection easier to test
+	exit.addEventListener("click",function(){removeSelection(id);});
+	return exit;
 }
 
 /**
  * @brief Fills the passed tab-content(a div) with tab-panes describing the data of a university. The number of panes will be #faculties+1.
+ If two universities are selected the tab will contain information to describe both universities, and tables to compare the two.
  * @param in div body Div element to fill with content.
- * @param in String selected The university to use to get data.
  */
-function assembleTabContent(body,selected)
+function assembleTabContent(body)
 {
 	//remove all previous children
 	while(body.firstChild)
@@ -330,38 +405,58 @@ function assembleTabContent(body,selected)
 	//so that the link in the head gets to this element
 	firstTab.setAttribute("id","home");
 	firstTab.className = "tab-pane fade in active";
-	//assemble first tab
-	assembleSingleTab(firstTab,uniData[selected]);
-	body.appendChild(firstTab);
-	//for each faculty create tab content and add it to the body
-	for(var i = 0; i < uniData[selected].faculties.length;i++)
+	//assemble first tab, if only 1 university is selected no need for comparison
+	if(selected2 === "")
 	{
-		//make new tab, assemble it and add it to body
-		var tmp = document.createElement("div");
-		//so that the faculty link in the head gets to this element
-		tmp.setAttribute("id","menu"+i);
-		tmp.className = "tab-pane fade";
-		assembleSingleTab(tmp,uniData[selected].faculties[i]);
-		body.appendChild(tmp);
+		assembleSingleTab(firstTab,uniData[selected]);
+		body.appendChild(firstTab);
+		//for each faculty create tab content and add it to the body
+		for(var i = 0; i < uniData[selected].faculties.length;i++)
+		{
+			//make new tab, assemble it and add it to body
+			var tmp = document.createElement("div");
+			//so that the faculty link in the head gets to this element
+			tmp.setAttribute("id","menu"+i);
+			tmp.className = "tab-pane fade";
+			assembleSingleTab(tmp,uniData[selected].faculties[i]);
+			body.appendChild(tmp);
+		}
+	}
+	else
+	{
+		assembleSingleTab(firstTab,uniData[selected],uniData[selected2]);
+		body.appendChild(firstTab);
+		//for each faculty create tab content and add it to the body
+		for(var i = 0; i < uniData[selected].faculties.length;i++)
+		{
+			//make new tab, assemble it and add it to body
+			var tmp = document.createElement("div");
+			//so that the faculty link in the head gets to this element
+			tmp.setAttribute("id","menu"+i);
+			tmp.className = "tab-pane fade";
+			assembleSingleTab(tmp,uniData[selected].faculties[i],uniData[selected2].faculties[i]);
+			body.appendChild(tmp);
+		}
 	}
 }
 
 /**
- * @brief Fills the passed tab(div) with content.
+ * @brief Fills the passed tab(div) with content to show the user information about the selected university (universities), and comparse them if 2 are selected.
  * @param in div element Div html element to be filled with content.
- * @param in objet dataObj Object to get data from to make content.
+ * @param in objet dataObj1 Object to get data from to make content, relative to the first selection.
+ * @param in objet dataObj2 Object to get data from to make content, relative to the second selection.
  */
-function assembleSingleTab(element,dataObj)
+function assembleSingleTab(element,dataObj1,dataObj2)
 {
 	//name of the uni and circle with color associated with the selected university
 	var name = document.createElement("h2");
 	//needed because even if the dataObj is a faculty we want to show the uni_name and not the faculty name
-	if(typeof dataObj.uni_name === 'undefined')
-		name.innerHTML = dataObj.name;
+	if(typeof dataObj1.uni_name === 'undefined')
+		name.innerHTML = dataObj1.name;
 	else
-		name.innerHTML = dataObj.uni_name;
+		name.innerHTML = dataObj1.uni_name;
 	var circle = document.createElement("div");
-	circle.className += "circle";
+	circle.className += "circle red";
 	//set up 3 text elements describing the tables
 	var did = document.createElement("h3");
 	did.innerHTML = "teaching";
@@ -370,19 +465,95 @@ function assembleSingleTab(element,dataObj)
 	var local = document.createElement("h3");
 	local.innerHTML = "local life";
 	
+	var div1 = document.createElement("div");
+	element.appendChild(div1);
 	//append text elements and tables created on the fly
-	element.appendChild(name);
-	element.appendChild(circle);
-	element.appendChild(did);
-	element.appendChild(makeTable(dataObj,teachingFrom,teachingTo));
-	element.appendChild(research);
-	element.appendChild(makeTable(dataObj,researchFrom,researchTo));
-	element.appendChild(local);
-	element.appendChild(makeTable(dataObj,localFrom,localTo));
+	div1.appendChild(name);
+	div1.appendChild(circle);
+	div1.appendChild(did);
+	div1.appendChild(makeTable(dataObj1,teachingFrom,teachingTo));
+	div1.appendChild(research);
+	div1.appendChild(makeTable(dataObj1,researchFrom,researchTo));
+	div1.appendChild(local);
+	div1.appendChild(makeTable(dataObj1,localFrom,localTo));
+	
+	//if 2 university selected add second uni's info and compare them
+	if(typeof dataObj2 != 'undefined')
+	{
+		//add row to contain the 3 divs of data
+		var container = document.createElement("div");
+		container.className += "row";
+		//remove div1 from element because div1 will be appended to container, wich will be appended to element
+		element.removeChild(div1);
+		container.appendChild(div1);
+		div1.className += "col-sm-5";
+		
+		//make div2 will contains informations about second selection
+		var div2 = document.createElement("div");
+		div2.className += "col-sm-5";
+		container.appendChild(div2);
+		
+		//name of the uni and circle with color associated with the selected university
+		var name2 = document.createElement("h2");
+		//needed because even if the dataObj is a faculty we want to show the uni_name and not the faculty name
+		if(typeof dataObj2.uni_name === 'undefined')
+			name2.innerHTML = dataObj2.name;
+		else
+			name2.innerHTML = dataObj2.uni_name;
+		var circle2 = document.createElement("div");
+		circle2.className += "circle blue";
+		
+		
+		
+		//append text elements and tables created on the fly
+		div2.appendChild(name2);
+		div2.appendChild(circle2);
+		div2.appendChild(did.cloneNode(true));
+		div2.appendChild(makeTable(dataObj2,teachingFrom,teachingTo));
+		div2.appendChild(research.cloneNode(true));
+		div2.appendChild(makeTable(dataObj2,researchFrom,researchTo));
+		div2.appendChild(local.cloneNode(true));
+		div2.appendChild(makeTable(dataObj2,localFrom,localTo));
+		
+		//make div3 wich contains the comparison between uni1 and uni2
+		var div3 = document.createElement("div");
+		div3.className += "col-sm-2";
+		container.appendChild(div3);
+		
+		//name of the uni and circle with color associated with the selected university
+		var name3 = document.createElement("h2");
+		name3.innerHTML = "comparison";
+		name3.style.visibility = "hidden";
+		var circle3 = document.createElement("div");
+		circle3.className += "circle gray";
+		
+		var did3 = document.createElement("h3");
+		did3.innerHTML = "teaching";
+		did3.style.visibility = "hidden";	
+		var research3 = document.createElement("h3");
+		research3.innerHTML = "research";
+		research3.style.visibility = "hidden";
+		var local3 = document.createElement("h3");
+		local3.style.visibility = "hidden";
+		local3.innerHTML = "local";
+		
+		//append text elements and tables created on the fly
+		div3.appendChild(name3);
+		div3.appendChild(did3);
+		div3.appendChild(makeComparisonTable(dataObj1,dataObj2,teachingFrom,teachingTo));
+		div3.appendChild(research3);
+		div3.appendChild(makeComparisonTable(dataObj1,dataObj2,researchFrom,researchTo));
+		div3.appendChild(local3);
+		div3.appendChild(makeComparisonTable(dataObj1,dataObj2,localFrom,localTo));
+		
+		//append container containing all 3 divs to the element
+		element.appendChild(container);
+	}
 }
 	
 /**
  * @brief Makes a table element with data taken from the dataObj, using fields specified by the from[].
+ * @param in {} dataObj Data object containg informations about the university to be displayed.
  * @param in String[] from Name of the fields of the object to use for the table.
  * @param in String[] to Names to describe the data, to avoid using the ones in "from".
  * @return A table element with a row for each element of "from". Each row has 2 td, the first is a string from "to", the second is dataObj[from[i]].
@@ -407,6 +578,36 @@ function makeTable(dataObj,from,to)
 }
 
 /**
+ * @brief Makes a table element where each row is colored depending on wich university wins in comparison for each statistic, red if the first wins, blue if the second wins, gray if they draw.
+ * @param in {} dataObj1 Data object containg informations about the first university.
+ * @param in {} dataObj2 Data object containg informations about the second university.
+ * @param in String[] from Name of the fields of the object to use for the table.
+ * @param in String[] to Names to describe the data, to avoid using the ones in "from".
+ * @return A table element with a row for each element of "from", colored depending on who wins a comparison between the 2 universities.
+ */
+function makeComparisonTable(dataObj1,dataObj2,from,to)
+{
+	var table = document.createElement("table");
+	for(var i = 0;i < from.length;i++)
+	{
+		var row = document.createElement("tr");
+		var td = document.createElement("td");
+		//add whitespace to give them form
+		td.innerHTML="&nbsp;&nbsp;&nbsp;&nbsp;";
+		//red if 1 is better than 2, blue if 2 is better than 1, gray otherwise
+		if(dataObj1[from[i]] > dataObj2[from[i]])
+			td.className += "red";
+		else if(dataObj1[from[i]] < dataObj2[from[i]])
+			td.className += "blue";
+		else
+			td.className += "gray";
+		row.appendChild(td);
+		table.appendChild(row);
+	}
+	return table;
+}
+
+/**
  * @brief Changes the text at the top of the page to tell the user what to do or what he's currently doing.
  */
 function updateDisplayTitle()
@@ -414,39 +615,44 @@ function updateDisplayTitle()
 	var display = document.getElementById("display");
 	if(selected === "")
 		display.innerHTML = "Select a university to get information about it.";
-	else
-		display.innerHTML = "Currently selected: " + selected + ".";
+	else if(selected2 === "")
+		display.innerHTML = "Currently selected: " + selected + ", select another university to compare them.";
+	else 
+		display.innerHTML = "Currently comparing: " + selected + " and " + selected2;
 }
 
 /**
- * @brief To make the tab with information about a university "close". The page title gets updated.
+ * @brief To make the tab with information about a university "close" (it gets hidden). The page title gets updated.
  */
 function closeTab()
 {
-	//remove selection from the map
-	ctx.putImageData(backup, 0, 0);
-	selected = "";
-	sX = 0;
-	sY = 0;
 	document.getElementById("tabs").style.display = "none";
 	updateDisplayTitle();
 }
 
 /**
- * @brief Shows the selected university on the map drawing a circle on it.
+ * @brief Shows the selected university(universities) on the map drawing a circle on it.
  */
 function showSelection()
 {
-	//remove previous selections from map if they exist
-	if(selected  != '')
-		ctx.putImageData(backup, 0, 0);
 	ctx.putImageData(backup, 0, 0);
 	//area of the circle around a uni
 	var refArea = (c.width*c.height)*refRadius;
-	ctx.beginPath();
-	ctx.arc(sX,sY, refArea, 0, 2 * Math.PI);
-	ctx.fillStyle = "red";
-	ctx.fill();
-	ctx.stroke();
+	if(selected != "")
+	{
+		ctx.beginPath();
+		ctx.arc(sX,sY, refArea, 0, 2 * Math.PI);
+		ctx.fillStyle = "red";
+		ctx.fill();
+		ctx.stroke();
+		if(selected2 != "")
+		{
+			ctx.beginPath();
+			ctx.arc(sX2,sY2, refArea, 0, 2 * Math.PI);
+			ctx.fillStyle = "blue";
+			ctx.fill();
+			ctx.stroke();
+		}
+	}
 }
 
