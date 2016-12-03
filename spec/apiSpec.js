@@ -170,3 +170,38 @@ describe("Test /data?uni=<parameter>: ", function() {
     }); 
 })
 
+/*
+Tests for /noscript, both with and without parameter "uni".
+*/
+describe("Test /noscript: ", function() {
+	
+    it("1 returns status code 200", function(done) {
+        request.get(
+            base_url + "noscript", 
+            function(error, response, body) {
+                expect(response.statusCode).toBe(200);
+                done();
+            });
+    }); 
+	
+	it("2 returns status code 200 with uni parameter", function(done) {
+        request.get(base_url + "noscript?uni='trento'",
+            function(error, response, body) {
+				expect(response.statusCode).toBe(200);
+				done();
+            });
+    }); 
+		
+	//! this test assumes that a university named "trento" exists
+	it("3 body has information about queried university", function(done) {
+        request.get(
+            base_url + "noscript?uni=trento", 
+            function(error, response, body) {
+				expect(response.body).toContain("trento");
+                done();
+            });
+    }); 
+	
+})
+
+
