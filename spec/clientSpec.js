@@ -10,7 +10,7 @@ var request = require("request");
 var client = rewire("../public/scripts/home.js");
 
 //set base URL
-var base_url = "http://localhost:5000/";
+//var base_url = "http://localhost:5000/";
 
 //setting mock variables that are used by the file and that should be provided by the html document
 	var c = {width:0,height:0};
@@ -233,9 +233,8 @@ describe("Testing checkClick(event) function: ", function()
 		uniData[points[i].name] = "";
 	client.__set__("uniData",uniData);
 	//mockup displayUniInfo to avoid calling document etc and non existing DOM elements
-	var disp = function(input){};
-	client.__set__("displayUniInfo",disp);
-	var oldDisp = client.__get__("displayUniInfo");
+	client.__set__("displayUniInfo",function(){});
+	
 	it("1 existance", function()
 	{
 		expect(checkClick).toBeDefined();
@@ -243,6 +242,7 @@ describe("Testing checkClick(event) function: ", function()
 	
 	it("2 sX and sY updated", function()
 	{
+		client.__set__("selected","");
 		client.__set__("points",points);
 		var event = {};
 		event.pageX = points[0].x;
@@ -262,10 +262,11 @@ describe("Testing checkClick(event) function: ", function()
 		expect(client.__get__("selected")).toEqual("ayy");
 	});
 	
-	it("4 right selections", function()
+	it("4 right selections with no previous selection", function()
 	{
 		for(var i = 0; i < points.length; i++)
 		{
+			client.__set__("selected","");
 			var event = {};
 			event.pageX = points[i].x;
 			event.pageY = points[i].y;
@@ -276,9 +277,31 @@ describe("Testing checkClick(event) function: ", function()
 		}
 	});
 	
-	it("5 no selections because clicking on border", function()
+	it("5 right selections with previous selection and previous selection stays the same", function()
+	{
+		client.__set__("selected","ss");
+		client.__set__("sX",4);
+		client.__set__("sY",4);
+		for(var i = 0; i < points.length; i++)
+		{
+			var event = {};
+			event.pageX = points[i].x;
+			event.pageY = points[i].y;
+			checkClick(event);
+			expect(client.__get__("sX2")).toEqual(points[i].x);
+			expect(client.__get__("sY2")).toEqual(points[i].y);
+			expect(client.__get__("selected2")).toEqual(points[i].name);
+			
+			expect(client.__get__("sX")).toEqual(4);
+			expect(client.__get__("sY")).toEqual(4);
+			expect(client.__get__("selected")).toEqual("ss");
+		}
+	});
+	
+	it("6 no selections because clicking on border", function()
 	{
 		client.__set__("selected","ayy");
+		client.__set__("selected2","ayy2");
 		for(var i = 0; i < points.length; i++)
 		{
 			var event = {};
@@ -286,11 +309,10 @@ describe("Testing checkClick(event) function: ", function()
 			event.pageY = points[i].top;
 			checkClick(event);
 			expect(client.__get__("selected")).toEqual("ayy");
+			expect(client.__get__("selected2")).toEqual("ayy2");
 		}
 	});
 	
-	//restoring function with the real one
-	client.__set__("displayUniInfo",oldDisp);
 });
 
 describe("Testing getOffsetLeft function: ", function()
@@ -353,10 +375,12 @@ describe("Testing getOffsetTop function: ", function()
 {
 	var off = client.__get__("getOffsetTop");
 	var element = {};
+	
 	it("1 existance", function()
 	{
 		expect(off).toBeDefined();
 	});
+	
 	it("2 no parent", function()
 	{	
 		expect(off(element)).toEqual(0);
@@ -405,33 +429,93 @@ describe("Testing getOffsetTop function: ", function()
 	
 });
 
-describe("Testing closeTab() function: ", function()
+describe("Testing removeSelection(id): ", function()
 {
-	//create and set a mockup document object
-	var document = {getElementById : function(arg){ return {style : {display : 1}}; }};
-	client.__set__("document",document);
+	//replacing with mockup function to avoid calls to document and DOM element
+	client.__set__("displayUniInfo",function(){});
+	client.__set__("closeTab",function(){});
 	
-	//get function
-	var close = client.__get__("closeTab");
+	var rm = client.__get__("removeSelection");
 	
-	it("1 existance", function()
-	  	{
-			expect(close).toBeDefined();
-		});
+	it("0 existance", function()
+	{
+		expect(rm).toBeDefined();
+	});
 	
-	it("2 sX and sY set to zero", function()
-	  	{
-			close();
-			expect(client.__get__("sX")).toEqual(0);
-			expect(client.__get__("sY")).toEqual(0);
-		});
+	it("1 Remove 1", function()
+	{
+		client.__set__("selected","test");
+		client.__set__("sX",5);
+		client.__set__("sY",5);
+		client.__set__("selected2","");
+		rm(1);
+		expect(client.__get__("selected")).toEqual("");
+		expect(client.__get__("sX")).toEqual(0);
+		expect(client.__get__("sY")).toEqual(0);
+	});
 	
-	it("3 selected set to ''", function()
-	  	{
-			close();
-			expect(client.__get__("selected")).toEqual("");
-		});
+	it("2 Remove 2", function()
+	{
+		client.__set__("selected2","test");
+		client.__set__("sX2",5);
+		client.__set__("sY2",5);
+		rm(2);
+		expect(client.__get__("selected2")).toEqual("");
+		expect(client.__get__("sX2")).toEqual(0);
+		expect(client.__get__("sY2")).toEqual(0);
+	});
 	
+	it("3 Don't do anything on wrong id", function()
+	{
+		client.__set__("selected","test");
+		client.__set__("sX",5);
+		client.__set__("sY",5);
+		client.__set__("selected2","test");
+		client.__set__("sX2",5);
+		client.__set__("sY2",5);
+		rm(0);
+		rm(3);
+		rm(1.5);
+		expect(client.__get__("selected")).toEqual("test");
+		expect(client.__get__("sX")).toEqual(5);
+		expect(client.__get__("sY")).toEqual(5);
+		expect(client.__get__("selected2")).toEqual("test");
+		expect(client.__get__("sX2")).toEqual(5);
+		expect(client.__get__("sY2")).toEqual(5);
+	});
+	
+	it("4 Don't do anything on wrong id", function()
+	{
+		client.__set__("selected","test");
+		client.__set__("sX",5);
+		client.__set__("sY",5);
+		client.__set__("selected2","test");
+		client.__set__("sX2",5);
+		client.__set__("sY2",5);
+		rm(0);
+		rm(3);
+		rm(1.5);
+		expect(client.__get__("selected")).toEqual("test");
+		expect(client.__get__("sX")).toEqual(5);
+		expect(client.__get__("sY")).toEqual(5);
+		expect(client.__get__("selected2")).toEqual("test");
+		expect(client.__get__("sX2")).toEqual(5);
+		expect(client.__get__("sY2")).toEqual(5);
+	});
+	
+	it("5 Overwrite select with select2", function()
+	{
+		client.__set__("selected","test");
+		client.__set__("sX",5);
+		client.__set__("sY",5);
+		client.__set__("selected2","test2");
+		client.__set__("sX2",50);
+		client.__set__("sY2",50);
+		rm(1);
+		expect(client.__get__("selected")).toEqual("test2");
+		expect(client.__get__("sX")).toEqual(50);
+		expect(client.__get__("sY")).toEqual(50);
+	});
 });
 
 /*
