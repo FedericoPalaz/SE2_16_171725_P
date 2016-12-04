@@ -12,13 +12,15 @@ var client = rewire("../public/scripts/home.js");
 //set base URL
 //var base_url = "http://localhost:5000/";
 
-//setting mock variables that are used by the file and that should be provided by the html document
+//setting mock variables that are used by the file and that should be provided by the browser and the document
+	client.__set__("document",{getElementById(){}});
+	client.__set__("httpGetAsync",function(){});
 	var c = {width:0,height:0};
 	client.__set__("window",{innerWidth:1000,innerHeight:1000});
 	client.__set__("c",c);
 	client.__set__("ctx",{drawImage:function(){},getImageData:function(){},putImageData:function(){},beginPath:function(){},arc:function(){},fill:function(){},stroke:function(){}});
 	client.__set__("backup",{});
-
+	
 
 
 
@@ -152,20 +154,35 @@ describe("Testing correct *From and *To data(top level variables):", function()
 
 describe("Testing selected,sX,sY (top level variables):", function()
 {
-	var sel = client.__get__("selected");
-	var sX = client.__get__("sX");
-	var sY = client.__get__("sY");	
+	var sel1 = client.__get__("selected1");
+	var sX1 = client.__get__("sX1");
+	var sY1 = client.__get__("sY1");	
+	var sel2 = client.__get__("selected2");
+	var sX2 = client.__get__("sX2");
+	var sY2 = client.__get__("sY2");	
 	it("1 existance", function()
 	  	{
-			expect(sel).toBeDefined();
-			expect(sX).toBeDefined();
-			expect(sY).toBeDefined();	
+			expect(sel1).toBeDefined();
+			expect(sX1).toBeDefined();
+			expect(sY1).toBeDefined();	
 		});
 	it("2 expected value", function()
 	  	{
-			expect(sel).toEqual("");
-			expect(sX).toEqual(0);
-			expect(sY).toEqual(0);
+			expect(sel1).toEqual("");
+			expect(sX1).toEqual(0);
+			expect(sY1).toEqual(0);
+		});
+	it("3 existance", function()
+	  	{
+			expect(sel2).toBeDefined();
+			expect(sX2).toBeDefined();
+			expect(sY2).toBeDefined();	
+		});
+	it("4 expected value", function()
+	  	{
+			expect(sel2).toEqual("");
+			expect(sX2).toEqual(0);
+			expect(sY2).toEqual(0);
 		});
 });
 
@@ -175,7 +192,6 @@ describe("Testing refresh(event) function: ", function()
 {
 	var refresh = client.__get__("refresh");
 	var uniP = client.__get__("uniPoints");
-	
 	
 	it("1 existance", function()
 	  	{
@@ -212,10 +228,10 @@ describe("Testing processPoints() function: ", function()
 		});
 	it("3 sX and sY updated", function()
 	  	{
-			client.__set__("selected",uniP[0][2]);
+			client.__set__("selected1",uniP[0][2]);
 			processPoints();
-			expect(client.__get__("sX")).toEqual(uniP[0][0] * c.width);
-			expect(client.__get__("sY")).toEqual(uniP[0][1] * c.height);
+			expect(client.__get__("sX1")).toEqual(uniP[0][0] * c.width);
+			expect(client.__get__("sY1")).toEqual(uniP[0][1] * c.height);
 			
 		});
 });
@@ -242,46 +258,46 @@ describe("Testing checkClick(event) function: ", function()
 	
 	it("2 sX and sY updated", function()
 	{
-		client.__set__("selected","");
+		client.__set__("selected1","");
 		client.__set__("points",points);
 		var event = {};
 		event.pageX = points[0].x;
 		event.pageY = points[0].y;
 		checkClick(event);
-		expect(client.__get__("sX")).toEqual(points[0].x);
-		expect(client.__get__("sY")).toEqual(points[0].y);
+		expect(client.__get__("sX1")).toEqual(points[0].x);
+		expect(client.__get__("sY1")).toEqual(points[0].y);
 	});
 	
 	it("3 no point clicked, selected stays the same", function()
 	{
-		client.__set__("selected","ayy");
+		client.__set__("selected1","ayy");
 		var event = {};
 		event.pageX = -500000;
 		event.pageY = -500000;
 		checkClick(event);
-		expect(client.__get__("selected")).toEqual("ayy");
+		expect(client.__get__("selected1")).toEqual("ayy");
 	});
 	
 	it("4 right selections with no previous selection", function()
 	{
 		for(var i = 0; i < points.length; i++)
 		{
-			client.__set__("selected","");
+			client.__set__("selected1","");
 			var event = {};
 			event.pageX = points[i].x;
 			event.pageY = points[i].y;
 			checkClick(event);
-			expect(client.__get__("sX")).toEqual(points[i].x);
-			expect(client.__get__("sY")).toEqual(points[i].y);
-			expect(client.__get__("selected")).toEqual(points[i].name);
+			expect(client.__get__("sX1")).toEqual(points[i].x);
+			expect(client.__get__("sY1")).toEqual(points[i].y);
+			expect(client.__get__("selected1")).toEqual(points[i].name);
 		}
 	});
 	
 	it("5 right selections with previous selection and previous selection stays the same", function()
 	{
-		client.__set__("selected","ss");
-		client.__set__("sX",4);
-		client.__set__("sY",4);
+		client.__set__("selected1","ss");
+		client.__set__("sX1",4);
+		client.__set__("sY1",4);
 		for(var i = 0; i < points.length; i++)
 		{
 			var event = {};
@@ -292,15 +308,15 @@ describe("Testing checkClick(event) function: ", function()
 			expect(client.__get__("sY2")).toEqual(points[i].y);
 			expect(client.__get__("selected2")).toEqual(points[i].name);
 			
-			expect(client.__get__("sX")).toEqual(4);
-			expect(client.__get__("sY")).toEqual(4);
-			expect(client.__get__("selected")).toEqual("ss");
+			expect(client.__get__("sX1")).toEqual(4);
+			expect(client.__get__("sY1")).toEqual(4);
+			expect(client.__get__("selected1")).toEqual("ss");
 		}
 	});
 	
 	it("6 no selections because clicking on border", function()
 	{
-		client.__set__("selected","ayy");
+		client.__set__("selected1","ayy");
 		client.__set__("selected2","ayy2");
 		for(var i = 0; i < points.length; i++)
 		{
@@ -308,7 +324,7 @@ describe("Testing checkClick(event) function: ", function()
 			event.pageX = points[i].left;
 			event.pageY = points[i].top;
 			checkClick(event);
-			expect(client.__get__("selected")).toEqual("ayy");
+			expect(client.__get__("selected1")).toEqual("ayy");
 			expect(client.__get__("selected2")).toEqual("ayy2");
 		}
 	});
@@ -444,14 +460,14 @@ describe("Testing removeSelection(id): ", function()
 	
 	it("1 Remove 1", function()
 	{
-		client.__set__("selected","test");
-		client.__set__("sX",5);
-		client.__set__("sY",5);
+		client.__set__("selected1","test");
+		client.__set__("sX1",5);
+		client.__set__("sY1",5);
 		client.__set__("selected2","");
 		rm(1);
-		expect(client.__get__("selected")).toEqual("");
-		expect(client.__get__("sX")).toEqual(0);
-		expect(client.__get__("sY")).toEqual(0);
+		expect(client.__get__("selected1")).toEqual("");
+		expect(client.__get__("sX1")).toEqual(0);
+		expect(client.__get__("sY1")).toEqual(0);
 	});
 	
 	it("2 Remove 2", function()
@@ -467,18 +483,18 @@ describe("Testing removeSelection(id): ", function()
 	
 	it("3 Don't do anything on wrong id", function()
 	{
-		client.__set__("selected","test");
-		client.__set__("sX",5);
-		client.__set__("sY",5);
+		client.__set__("selected1","test");
+		client.__set__("sX1",5);
+		client.__set__("sY1",5);
 		client.__set__("selected2","test");
 		client.__set__("sX2",5);
 		client.__set__("sY2",5);
 		rm(0);
 		rm(3);
 		rm(1.5);
-		expect(client.__get__("selected")).toEqual("test");
-		expect(client.__get__("sX")).toEqual(5);
-		expect(client.__get__("sY")).toEqual(5);
+		expect(client.__get__("selected1")).toEqual("test");
+		expect(client.__get__("sX1")).toEqual(5);
+		expect(client.__get__("sY1")).toEqual(5);
 		expect(client.__get__("selected2")).toEqual("test");
 		expect(client.__get__("sX2")).toEqual(5);
 		expect(client.__get__("sY2")).toEqual(5);
@@ -486,18 +502,18 @@ describe("Testing removeSelection(id): ", function()
 	
 	it("4 Don't do anything on wrong id", function()
 	{
-		client.__set__("selected","test");
-		client.__set__("sX",5);
-		client.__set__("sY",5);
+		client.__set__("selected1","test");
+		client.__set__("sX1",5);
+		client.__set__("sY1",5);
 		client.__set__("selected2","test");
 		client.__set__("sX2",5);
 		client.__set__("sY2",5);
 		rm(0);
 		rm(3);
 		rm(1.5);
-		expect(client.__get__("selected")).toEqual("test");
-		expect(client.__get__("sX")).toEqual(5);
-		expect(client.__get__("sY")).toEqual(5);
+		expect(client.__get__("selected1")).toEqual("test");
+		expect(client.__get__("sX1")).toEqual(5);
+		expect(client.__get__("sY1")).toEqual(5);
 		expect(client.__get__("selected2")).toEqual("test");
 		expect(client.__get__("sX2")).toEqual(5);
 		expect(client.__get__("sY2")).toEqual(5);
@@ -505,17 +521,102 @@ describe("Testing removeSelection(id): ", function()
 	
 	it("5 Overwrite select with select2", function()
 	{
-		client.__set__("selected","test");
-		client.__set__("sX",5);
-		client.__set__("sY",5);
+		client.__set__("selected1","test");
+		client.__set__("sX1",5);
+		client.__set__("sY1",5);
 		client.__set__("selected2","test2");
 		client.__set__("sX2",50);
 		client.__set__("sY2",50);
 		rm(1);
-		expect(client.__get__("selected")).toEqual("test2");
-		expect(client.__get__("sX")).toEqual(50);
-		expect(client.__get__("sY")).toEqual(50);
+		expect(client.__get__("selected1")).toEqual("test2");
+		expect(client.__get__("sX1")).toEqual(50);
+		expect(client.__get__("sY1")).toEqual(50);
 	});
+});
+
+describe("Testing CapitalizeTokens(str): ", function()
+{
+	var cap = client.__get__("CapitalizeTokens");
+	
+	it("1 existence", function()
+	{
+		expect(cap).toBeDefined();
+	});
+	
+	it("2 single word", function()
+	{
+		expect(cap("test")).toEqual("Test");
+	});
+	
+	it("3 all caps single word", function()
+	{
+		expect(cap("TEST")).toEqual("Test");
+	});
+	
+	it("4 alternating caps single word", function()
+	{
+		expect(cap("tEsT")).toEqual("Test");
+	});
+	
+	it("5 whitespace at the beginnng", function()
+	{
+		expect(cap("    tEsT")).toEqual("    Test");
+	});
+	
+	it("6 non alphabet chars at the beginnng", function()
+	{
+		expect(cap("..tEsT")).toEqual("..Test");
+	});
+	
+	it("7 multiple tokens", function()
+	{
+		expect(cap("test hello test hello")).toEqual("Test Hello Test Hello");
+	});
+	
+	it("8 multiple tokens multiple whitespaec", function()
+	{
+		expect(cap("  test    hello      test  hello")).toEqual("  Test    Hello      Test  Hello");
+	});
+	
+	it("9 no alphabetical chars", function()
+	{
+		expect(cap(" @ ")).toEqual(" @ ");
+	});
+	
+	it("1o space only", function()
+	{
+		expect(cap("   ")).toEqual("   ");
+	});
+});
+
+describe("Testing storeUnitData(data): ", function()
+{
+	//what happens if the data passed is not a JSON object isn't tested because the client only connects to our servers
+	//getting function
+	var store = client.__get__("storeUniData");
+	//clearing previous data
+	client.__set__("uniData",{});
+	
+	var data = JSON.stringify( {name: "test"} );
+	
+	it("1 existance", function()
+	{
+		expect(store).toBeDefined();
+	});
+	
+	it("2 data gets passed", function()
+	{
+		store(data);
+		expect(client.__get__("uniData").test.name).toEqual("test");
+	});
+	
+	it("3 data gets correctly overwritten", function()
+	{
+		store(data);
+		store( JSON.stringify( { name: 'test', field2: 'overwritten'} ) );
+		expect(client.__get__("uniData").test.field2).toEqual("overwritten");
+	});
+	
 });
 
 /*
