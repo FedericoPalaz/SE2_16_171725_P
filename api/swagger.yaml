@@ -78,10 +78,10 @@ paths:
           description: Everything went well, sending html page.
         500:
           description: Internal error, sending to error page if possible.
-  /:
+  /index:
     get:
       summary: Home of the application.
-      description: Home of the application, where the user can click on a map to selet a university and get info about it, selecting two universities allows the user to compare them.
+      description: Home of the application, where the user can click on a map to selet a university and get info about it, selecting two universities allows the user to compare them. All paths that are not listed in this file and would 404 get redirected to this one.
       responses:
         200:
           description: Everything went well, sending html page.
