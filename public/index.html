@@ -1,67 +1,53 @@
 <!DOCTYPE html>
-	<html>
-		<head>
-			<title>UniItalia Info</title>
-			<meta charset="UTF-8">
-			<noscript>
-				<meta http-equiv="refresh" content="0; url=/noscript" />
-			</noscript>
-			<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-			<link rel="stylesheet" href="/styles/home.css"> 
-		</head>
-		<body onload="onLoad()">
-			<img id="map" src="/img/map.png" alt="map of italy">
-			<h1 id="display">Select a university to display information about it.</h1>
-			<div class="container-fluid">
-				<div class="row">
-					<div class="col-md-6">
-						<canvas id="canvas">
-						</canvas>
-					</div>
-					<div id="tabs" class="col-md-6">
-						
-						<ul id="tabHead" class="nav nav-pills" >
-							<li class="active"><a data-toggle="pill" href="#home">Home</a></li>
-							<li><a data-toggle="pill" href="#menu1">Menu 1</a></li>
-							<li><a data-toggle="pill" href="#menu2">Menu 2</a></li>
-							<li><a data-toggle="pill" href="#menu3">Menu 3</a></li>
-						</ul>
+<html>
 
-						<div id="tabContent" class="tab-content">
-							<div id="home" class="tab-pane fade in active">
-							  <h3>HOME</h3>
-							  <p></p>
-							</div>
-							<div id="menu1" class="tab-pane fade">
-							  <h3>Menu 1</h3>
-							  <p></p>
-							</div>
-							<div id="menu2" class="tab-pane fade">
-							  <h3>Menu 2</h3>
-							  <p></p>
-							</div>
-							<div id="menu3" class="tab-pane fade">
-							  <h3>Menu 3</h3>
-							  <p></p>
-							</div>
-						</div>
+<head>
+	<title>UniItalia Info</title>
+	<meta charset="UTF-8">
+	<noscript>
+		<meta http-equiv="refresh" content="0; url=/noscript" /> </noscript>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/styles/home.css">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"> </head>
+
+<body onload="onLoad()"> <img id="map" src="/img/map.png" alt="map of italy">
+	<h1 id="display">Select a university to display information about it.</h1>
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-6">
+				<canvas id="canvas"> </canvas>
+			</div>
+			<div id="tabs" class="col-md-6">
+				<ul id="tabHead" class="nav nav-pills">
+					<li class="active"><a data-toggle="pill" href="#home">Home</a></li>
+					<li><a data-toggle="pill" href="#menu1">Menu 1</a></li>
+					<li><a data-toggle="pill" href="#menu2">Menu 2</a></li>
+					<li><a data-toggle="pill" href="#menu3">Menu 3</a></li>
+				</ul>
+				<div id="tabContent" class="tab-content">
+					<div id="home" class="tab-pane fade in active">
+						<h3>HOME</h3>
+						<p></p>
 					</div>
-					
-					
-					
-					
-					
-					
-					
+					<div id="menu1" class="tab-pane fade">
+						<h3>Menu 1</h3>
+						<p></p>
+					</div>
+					<div id="menu2" class="tab-pane fade">
+						<h3>Menu 2</h3>
+						<p></p>
+					</div>
+					<div id="menu3" class="tab-pane fade">
+						<h3>Menu 3</h3>
+						<p></p>
+					</div>
 				</div>
 			</div>
+		</div>
+	</div>
+	<script src="/scripts/home.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</body>
 
-
-
-
-
-			<script src="/scripts/home.js"></script>
-			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-			<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-		</body>
-	</html>
+</html>

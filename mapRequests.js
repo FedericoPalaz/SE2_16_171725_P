@@ -4,44 +4,42 @@ What will follow are a bunch of functions meant to be arguments for app.use,app.
 to the app passed as an argument, intended use is mapRequests(app).
 */
 
-var express = require('express');//express library
-var path = require('path');//for moving in folders
-var bind = require('bind');//compiling tpl templates
+var express = require("express");//express library
+var path = require("path");//for moving in folders
+var bind = require("bind");//compiling tpl templates
 
-var data = require('./dataManager.js');//Employee class and employees
+var data = require("./dataManager.js");//Employee class and employees
 
 //path to main page file
-var filePath = __dirname+'/public/index.html';
-//path to error file
-var errorFilePath = __dirname+'/content/error.html';
+var filePath = __dirname + "/public/index.html";
 
 /**
  * @brief Passing an express app to this function maps the function with various GET/POST
- requests. It's used to keep everything in place and clean.
+ requests. It"s used to keep everything in place and clean.
  * @param in expressAppInstance app App to map with requests.
  */
 function mapRequests(app)
 {
 	//to reset db
-	app.use('/db',resetDb);
+	app.use("/db", resetDb);
 	
 	//to retriveve all uni names
-	app.use('/data/universities',retrieveUniNames);
+	app.use("/data/universities", retrieveUniNames);
 	
 	//to retriveve all uni names
-	app.use('/data/faculties',retrieveFacultyNames);
+	app.use("/data/faculties", retrieveFacultyNames);
 	
 	//to retrieve uni data
-	app.use('/data',retrieveUniData);
+	app.use("/data", retrieveUniData);
 	
 	//allow access to public folder
-	app.use(express.static(path.join(__dirname, 'public')));
+	app.use(express.static(path.join(__dirname, "public")));
 	
 	//no script page
-	app.use("/noscript",noScript);
+	app.use("/noscript", noScript);
 	
 	//all requests different from above will be redirected to index 
-	app.use('*', express.static(filePath)); 
+	app.use("*", express.static(filePath)); 
 }
 
  //Utility function to (re)generate db data. Just for developing purposes.
@@ -50,10 +48,7 @@ function resetDb(request,response)
 	var headers = {};
 	data.generate(function(res)
 	   {
-			if(res)
-				response.sendFile(filePath);
-			else
-				response.sendFile(errorFilePath);
+			response.sendFile(filePath);
 		});
 }
 
@@ -69,15 +64,15 @@ function retrieveUniData(request,response)
     headers["Access-Control-Allow-Origin"] = "*"; //for cross enviroment request
     headers["Access-Control-Allow-Methods"] = "POST, GET, PUT, DELETE, OPTIONS";//methods allowed to responce
     headers["Access-Control-Allow-Credentials"] = false;
-    headers["Access-Control-Max-Age"] = '86400'; // 24 hours
+    headers["Access-Control-Max-Age"] = "86400"; // 24 hours
     headers["Access-Control-Allow-Headers"] = "X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"; //type of headers
     //answer
     headers["Content-Type"] = "application/JSON";//format response
-	if(typeof request.query.uni != 'undefined')
+	if(typeof request.query.uni != "undefined")
 	{
 		data.getUni(request.query.uni, function(data)
 				{
-					if(data.error === 'error')
+					if(data.error === "error")
 						response.writeHead(500, headers);
 					else
 						response.writeHead(200, headers);
@@ -93,7 +88,7 @@ function retrieveUniData(request,response)
 
  /*
  Retrieves all univesities names, and returns them in a json format as an object in the form of:
- {names:String[]}, or {error:'error'} if there has been an error.
+ {names:String[]}, or {error:"error"} if there has been an error.
  */
 function retrieveUniNames(request,response)
 {
@@ -102,13 +97,13 @@ function retrieveUniNames(request,response)
     headers["Access-Control-Allow-Origin"] = "*"; //for cross enviroment request
     headers["Access-Control-Allow-Methods"] = "POST, GET, PUT, DELETE, OPTIONS";//methods allowed to responce
     headers["Access-Control-Allow-Credentials"] = false;
-    headers["Access-Control-Max-Age"] = '86400'; // 24 hours
+    headers["Access-Control-Max-Age"] = "86400"; // 24 hours
     headers["Access-Control-Allow-Headers"] = "X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"; //type of headers
     //answer
     headers["Content-Type"] = "application/JSON";//format response
 	data.getUniNames(function(data)
 				{
-					if(data.error === 'error')
+					if(data.error === "error")
 						response.writeHead(500, headers);
 					else
 						response.writeHead(200, headers);
@@ -119,7 +114,7 @@ function retrieveUniNames(request,response)
 
 /*
  Retrieves all faculties names, and returns them in a json format as an object in the form of:
- {names:String[]}, or {error:'error'} if there has been an error.
+ {names:String[]}, or {error:"error"} if there has been an error.
  */
 function retrieveFacultyNames(request,response)
 {
@@ -128,13 +123,13 @@ function retrieveFacultyNames(request,response)
     headers["Access-Control-Allow-Origin"] = "*"; //for cross enviroment request
     headers["Access-Control-Allow-Methods"] = "POST, GET, PUT, DELETE, OPTIONS";//methods allowed to responce
     headers["Access-Control-Allow-Credentials"] = false;
-    headers["Access-Control-Max-Age"] = '86400'; // 24 hours
+    headers["Access-Control-Max-Age"] = "86400"; // 24 hours
     headers["Access-Control-Allow-Headers"] = "X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"; //type of headers
     //answer
     headers["Content-Type"] = "application/JSON";//format response
 	data.getFacNames(function(data)
 				{
-					if(data.error === 'error')
+					if(data.error === "error")
 						response.writeHead(500, headers);
 					else
 						response.writeHead(200, headers);
@@ -152,39 +147,47 @@ function noScript(request,response)
     headers["Access-Control-Allow-Origin"] = "*"; //for cross enviroment request
     headers["Access-Control-Allow-Methods"] = "POST, GET, PUT, DELETE, OPTIONS";//methods allowed to responce
     headers["Access-Control-Allow-Credentials"] = false;
-    headers["Access-Control-Max-Age"] = '86400'; // 24 hours
+    headers["Access-Control-Max-Age"] = "86400"; // 24 hours
     headers["Access-Control-Allow-Headers"] = "X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"; //type of headers
     //answer
     headers["Content-Type"] = "text/html";//format response
 	
 	//if no uni is specified show all the universities link
-	if(typeof request.query.uni === 'undefined')
+	if(typeof request.query.uni === "undefined")
 	{
 		data.getUniNames(function(data)
 		{
-			if(data.error === 'error')
+			if(data.error === "error")
+			{
 				response.writeHead(500, headers);
+				response.end("Internal error");
+			}
 			else
+			{
 				response.writeHead(200, headers);
-			var uniNames = [];
-			for( var i = 0; i < data.names.length; i++)
-				uniNames.push({name:data.names[i]});
-			bind.toFile("tpl/home.tpl",
-						{
-							names:uniNames,
-							showNames: "block"
-						}, function callback(data) 
-						{ 
-							response.end(data);
-						});
+				var uniNames = [];
+				for( var i = 0; i < data.names.length; i++)
+					uniNames.push( {name : data.names[i]} );
+				bind.toFile("tpl/home.tpl",
+							{
+								names:uniNames,
+								showNames: "block"
+							}, function callback(data) 
+							{ 
+								response.end(data);
+							});
+			}
 		});
 	}
 	else//if a uni is specified display infos about a university
 	{
 		data.getUni(request.query.uni, function(data)
 		{
-			if(data.error === 'error')
+			if(data.error === "error")
+			{
 				response.writeHead(500, headers);
+				response.end("Internal error");
+			}
 			else
 				response.writeHead(200, headers);
 			//bind library seems unable to deal with true/false, remapping one field to a string
@@ -201,9 +204,4 @@ function noScript(request,response)
 	}
 }
 		
-		
-		
-	
-	
-
 exports.map = mapRequests;

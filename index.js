@@ -16,19 +16,20 @@ var map = require("./mapRequests.js");
 var app = express();
 
 //authorizations
-app.options('*', cors());
+app.options("*", cors());
 //setting port
-app.set('port', (process.env.PORT || 5000));
+app.set("port", (process.env.PORT || 5000));
 
 //setting parsers for urls and json
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+//setting paths for app requests
 map.map(app);
 
 //starting to listen on port
-app.listen(app.get('port'), function() {
-  console.log('app is up on port', app.get('port'));
+app.listen(app.get("port"), function() {
+  console.log("app is up on port", app.get("port"));
 });
 
 

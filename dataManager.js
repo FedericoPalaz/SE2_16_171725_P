@@ -2,10 +2,10 @@
 var pg = require('pg');//postgre database
 
 //list of italian universities
-var uni_list = ["bolzano","trento","trieste","venezia","verona","brescia","bergamo","varese","milano","pavia","castellanza","aosta","torino","vercelli","genova","parma","modena","ferrara","bologna","padova","udine","pisa","firenze","siena","urbino","ancona","perugia","macerata","camerino","viterbo","l aquila","teramo","chieti","roma","cassino","campobasso","foggia","napoli","sassari","benevento","salerno","potenza","bari","lecce","rende","catanzaro","reggio calabria","messina","palermo","catania","cagliari"];
+var uni_list = ["bolzano","trento","trieste","venezia","verona","brescia","bergamo","varese","milano","pavia","castellanza","aosta","torino","vercelli","genova","parma","modena","ferrara","bologna","padova","udine","pisa","firenze","siena","urbino","ancona","perugia","macerata","camerino","viterbo","l aquila","teramo","chieti","roma","cassino","campobasso","foggia","napoli","sassari","benevento","salerno","potenza","bari","lecce","rende","catanzaro","reggio calabria","messina","palermo","catania","cagliari","s. marino"];
 
 //list of faculties
-var faculties = ["science","engineering","medicina","giurisprudenza","economia","sociologia","lettere"];
+var faculties = ["science", "engineering", "medicina", "giurisprudenza", "economia", "sociologia", "lettere"];
 
 /*
 if app is run locally you need to have a .env file with a postgres url, like
@@ -27,7 +27,7 @@ function generateTuple()
 {
 	var tuple = [Math.random()*100,Math.random()*100,Math.random()>=0.5,Math.round(Math.random()*40), Math.round(Math.random()*500),Math.round(Math.random()*50000),Math.round(Math.random()*50000000),Math.round(Math.random()*50), Math.round(Math.random()*50000),Math.random()*200,Math.round(Math.random()*800),Math.random()];
 	for(var i=0; i < tuple.length;i++)
-		if(typeof tuple[i] == 'number')
+		if(typeof tuple[i] == "number")
 			tuple[i] = tuple[i].toFixed(2);
 	return tuple;
 }
@@ -46,7 +46,7 @@ function generateUniversity(name,faculties)
 	var uniQuery = "INSERT INTO uni VALUES ('" + name + "'," +generateTuple().toString()+");";
 	//query to bulk insert all faculties of a uni
 	var facQuery = "INSERT INTO faculties VALUES ";
-	for(var i=0;i<faculties.length;i++)
+	for(var i=0; i<faculties.length; i++)
 		facQuery += "('" +name+ "','" + faculties[i] + "'," + generateTuple().toString() + "),";
 	facQuery = facQuery.replace(/.$/,";");
 	//append facQuery to uniQuery and return
@@ -141,13 +141,13 @@ function getUniversityData(uni,callback)
 		else
 		{
 				//get single uni data
-			    uniQuery = client.query("SELECT * FROM uni WHERE NAME = $1;",[uni],
+			    uniQuery = client.query("SELECT * FROM uni WHERE NAME = $1;", [uni],
 									   function(error)
 										{
 											if(error)
 											{
 												console.log(err);
-												callback({'error':'error'});
+												callback({'error':"error"});
 											}
 										});
 											
@@ -157,12 +157,12 @@ function getUniversityData(uni,callback)
 				});
 			
 				//get data about faculties of the university
-				facQuery = client.query("SELECT * FROM faculties f WHERE f.uni_name = $1",[uni], 			function(error)
+				facQuery = client.query("SELECT * FROM faculties f WHERE f.uni_name = $1", [uni], 			function(error)
 										{
 											if(error)
 											{
 												console.log(err);
-												callback({'error':'error'});
+												callback({'error':"error"});
 											}
 										});
 				//get results 1 row at a time and push it to facResults
@@ -172,7 +172,7 @@ function getUniversityData(uni,callback)
 				});
 			
 			    //close connection after getting data and pass object to callback
-				facQuery.on('end', function() 
+				facQuery.on("end", function() 
 				{
 					done();
 					//if data has been found assemble the object
@@ -205,7 +205,7 @@ function getUniversityNames(callback)
 		{
 			done();
 			console.log(err);
-			callback({'error':'error'});
+			callback({'error':"error"});
 		}
 		else
 		{
@@ -216,7 +216,7 @@ function getUniversityNames(callback)
 					if(error)
 					{
 						done();
-						callback({'error':'error'});
+						callback({'error':"error"});
 					}
 				});
 				//get results 1 row at a time and push it to results
@@ -226,10 +226,10 @@ function getUniversityNames(callback)
 				});
 			
 			    //close connection after getting data and pass object to callback
-				query.on('end', function() 
+				query.on("end", function() 
 				{
 					//doing {names:results} would result in names being an array of objects {name:<uniName>}, trasforming it in an array of names
-					var res = []
+					var res = [];
 					for(var i = 0;i < results.length; i++)
 						res.push(results[i].name);
 					done();
@@ -264,7 +264,7 @@ function getFacultyNames(callback)
 					if(error)
 					{
 						done();
-						callback({'error':'error'});
+						callback({'error':"error"});
 					}
 				});
 				//get results 1 row at a time and push it to results
@@ -274,10 +274,10 @@ function getFacultyNames(callback)
 				});
 			
 			    //close connection after getting data and pass object to callback
-				query.on('end', function() 
+				query.on("end", function() 
 				{
 					//doing {names:results} would result in names being an array of objects {name:<facultyName>}, trasforming it in an array of names
-					var res = []
+					var res = [];
 					for(var i = 0;i < results.length; i++)
 						res.push(results[i].name);
 					done();
